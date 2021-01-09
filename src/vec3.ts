@@ -64,7 +64,7 @@ export class vec3 {
   }
 
   public dot(other: vec3): number {
-    return this.e[0] * other.e[0] + this.e[1] * other.e[1] + this.e[2] * other.e[2];
+    return (this.e[0] * other.e[0]) + (this.e[1] * other.e[1]) + (this.e[2] * other.e[2]);
   }
 
   public cross(other: vec3): vec3 {

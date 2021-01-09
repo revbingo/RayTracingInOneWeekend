@@ -1,3 +1,4 @@
+import { POINT_CONVERSION_COMPRESSED } from 'constants';
 import { vec3, vec3 as point3 } from './vec3.js';
 
 export class ray {
@@ -20,4 +21,5 @@ export class ray {
   public at(t: number): point3 {
     return this.orig.add(this.dir.scaleUp(t));
   }
+
 }
