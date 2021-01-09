@@ -4,32 +4,23 @@ import { ray } from './ray.js';
 
 export class FileWriter {
   public async writeFile(file_name: string) {
-    const aspect_ratio = 16 / 9;
-    const image_width = 400;
-    const image_height = image_width / aspect_ratio;
+    
+    const IMG_WIDTH = 400;
 
-    const viewport_height = 2.0;
-    const viewport_width = aspect_ratio * viewport_height;
-    const focal_length = 1.0;
+    const scene = new Scene(IMG_WIDTH);
 
-    const origin = new point3([0, 0, 0]);
-    const horizontal = new vec3([viewport_width, 0, 0]);
-    const vertical = new vec3([0, viewport_height, 0]);
-    const lower_left_corner = origin.subtract(horizontal.scaleDown(2)).subtract(vertical.scaleDown(2)).subtract(new vec3([0, 0, focal_length]));
+    await fs.writeFile(file_name, `P3\n${scene.width} ${scene.height}\n255\n`);
   
-    await fs.writeFile(file_name, `P3\n${image_width} ${image_height}\n255\n`);
-  
+    const pixels = scene.getPixels();
+
     let buffer = '';
-    for (let j = image_height - 1; j >= 0; --j) {
-      console.log(`Scanlines remaining: ${j}`)
-      for (let i = 0; i < image_width; ++i) {
-        const u = i / image_width - 1;
-        const v = j / image_height - 1;
-        const r = new ray(origin, lower_left_corner.add(horizontal.scaleUp(u).add(vertical.scaleUp(v)).subtract(origin)))
-        buffer += this.writeColor(this.rayColor(r));
-      }
-  
-      if (j % 20 == 0) {
+    let line_count = 0;
+    for (let i = 0; i < pixels.length; i++) {
+      buffer += this.writeColor(this.rayColor(pixels[i]));
+
+      if (i % (IMG_WIDTH * 20) == 0) {
+        line_count += 20;
+        console.log(`Written ${line_count} lines`);
         await fs.appendFile(file_name, buffer);
         buffer = '';
       }
@@ -44,5 +35,50 @@ export class FileWriter {
     const unit_direction = ray.direction.unit();
     const t = 0.5 * (unit_direction.y + 1);
     return new color([1, 1, 1]).scaleUp(1-t).add(new color([0.5, 0.7, 1.0]).scaleUp(t));
+  }
+}
+
+export class Scene {
+  private pixels: ray[][];
+  private image_height: number;
+
+  constructor(private image_width: number) {
+    const aspect_ratio = 16 / 9;
+    // const image_width = 400;
+    this.image_height = image_width / aspect_ratio;
+    
+    this.pixels = new Array(this.image_height).fill(null).map(() => new Array(image_width).fill(null));
+    const viewport_height = 2.0;
+    const viewport_width = aspect_ratio * viewport_height;
+    const focal_length = 1.0;
+
+    const origin = new point3([0, 0, 0]);
+    const horizontal = new vec3([viewport_width, 0, 0]);
+    const vertical = new vec3([0, viewport_height, 0]);
+    const lower_left_corner = origin.subtract(horizontal.scaleDown(2)).subtract(vertical.scaleDown(2)).subtract(new vec3([0, 0, focal_length]));
+  
+    for (let j = this.image_height - 1; j >= 0; --j) {
+      for (let i = 0; i < this.image_width; ++i) {
+        const u = i / this.image_width - 1;
+        const v = j / this.image_height - 1;
+        const r = new ray(origin, lower_left_corner.add(horizontal.scaleUp(u).add(vertical.scaleUp(v)).subtract(origin)))
+        this.pixels[j][i] = r;
+      }
+    }
+
+    console.log(`Got ${this.pixels.length * this.pixels[0].length} pixels`)
+  }
+
+  get width() {
+    return this.image_width;
+  }
+
+  get height() {
+    return this.image_height;
+  }
+
+  public getPixels(): ray[] {
+    console.log(`Flattened is ${this.pixels.flat().length} long`)
+    return this.pixels.flat();
   }
 }
