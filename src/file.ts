@@ -7,7 +7,7 @@ export class FileWriter {
     
     const IMG_WIDTH = 400;
 
-    const scene = new Scene(IMG_WIDTH);
+    const scene = new Scene(IMG_WIDTH, 16 / 9);
 
     await fs.writeFile(file_name, `P3\n${scene.width} ${scene.height}\n255\n`);
   
@@ -16,9 +16,12 @@ export class FileWriter {
     let buffer = '';
     let line_count = 0;
     for (let i = 0; i < pixels.length; i++) {
+      if (i == 1) {
+        console.log(`pix 1 = ${pixels[i].toString()}`);
+      }
       buffer += this.writeColor(this.rayColor(pixels[i]));
 
-      if (i % (IMG_WIDTH * 20) == 0) {
+      if (i % (IMG_WIDTH * 20) == 0 || i == pixels.length - 1) {
         line_count += 20;
         console.log(`Written ${line_count} lines`);
         await fs.appendFile(file_name, buffer);
@@ -39,15 +42,13 @@ export class FileWriter {
 }
 
 export class Scene {
-  private pixels: ray[][];
+  private pixels: ray[];
   private image_height: number;
 
-  constructor(private image_width: number) {
-    const aspect_ratio = 16 / 9;
-    // const image_width = 400;
+  constructor(private image_width: number, aspect_ratio: number) {
     this.image_height = image_width / aspect_ratio;
     
-    this.pixels = new Array(this.image_height).fill(null).map(() => new Array(image_width).fill(null));
+    this.pixels = [];
     const viewport_height = 2.0;
     const viewport_width = aspect_ratio * viewport_height;
     const focal_length = 1.0;
@@ -62,11 +63,9 @@ export class Scene {
         const u = i / this.image_width - 1;
         const v = j / this.image_height - 1;
         const r = new ray(origin, lower_left_corner.add(horizontal.scaleUp(u).add(vertical.scaleUp(v)).subtract(origin)))
-        this.pixels[j][i] = r;
+        this.pixels.push(r);
       }
     }
-
-    console.log(`Got ${this.pixels.length * this.pixels[0].length} pixels`)
   }
 
   get width() {
@@ -78,7 +77,6 @@ export class Scene {
   }
 
   public getPixels(): ray[] {
-    console.log(`Flattened is ${this.pixels.flat().length} long`)
-    return this.pixels.flat();
+    return this.pixels;
   }
 }
