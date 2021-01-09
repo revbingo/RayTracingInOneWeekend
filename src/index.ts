@@ -1,6 +1,9 @@
-import { FileWriter } from './file.js';
+import { FileWriter, Scene } from './file.js';
 
 (async function() {
-  await new FileWriter().writeFile('/Users/markpiper/sandbox/misc/raytrace/img.ppm');
-  await new FileWriter().writeFileOld('/Users/markpiper/sandbox/misc/raytrace/img_old.ppm');
+  const IMG_WIDTH = 400;
+
+  const scene = new Scene(IMG_WIDTH, 16 / 9);
+
+  await new FileWriter().writeFile('/Users/markpiper/sandbox/misc/raytrace/img.ppm', scene);
 })();

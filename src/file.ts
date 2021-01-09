@@ -3,12 +3,7 @@ import { vec3 as color, vec3 as point3, vec3 } from './vec3.js';
 import { ray } from './ray.js';
 
 export class FileWriter {
-  public async writeFile(file_name: string) {
-    
-    const IMG_WIDTH = 400;
-
-    const scene = new Scene(IMG_WIDTH, 16 / 9);
-
+  public async writeFile(file_name: string, scene: Scene) {
     await fs.writeFile(file_name, `P3\n${scene.width} ${scene.height}\n255\n`);
   
     const pixels = scene.getPixels();
@@ -21,7 +16,7 @@ export class FileWriter {
       }
       buffer += this.writeColor(this.rayColor(pixels[i]));
 
-      if (i % (IMG_WIDTH * 20) == 0 || i == pixels.length - 1) {
+      if (i % (scene.width * 20) == 0 || i == pixels.length - 1) {
         line_count += 20;
         console.log(`Written ${line_count} lines`);
         await fs.appendFile(file_name, buffer);
