@@ -18,7 +18,7 @@ export class ray {
   }
 
   public at(t: number): point3 {
-    return this.orig.add(this.dir.scaleUp(t));
+    return this.orig.add(this.dir.scale(t));
   }
 
   public toString() {

@@ -53,7 +53,7 @@ export class Scene {
     } else {
       const unit_direction = r.direction.unit();
       const t = 0.5 * (unit_direction.y + 1);
-      return new color([1, 1, 1]).scaleUp(1-t).add(new color([0.5, 0.7, 1.0]).scaleUp(t));
+      return new color([1, 1, 1]).scale(1-t).add(new color([0.5, 0.7, 1.0]).scale(t));
     }
   }
 
@@ -110,22 +110,39 @@ export class NaiveDiffuseMaterial implements Material {
 }
 
 export class MetalMaterial implements Material {
-  constructor(private c: color) {}
+  private fuzziness: number;
+  constructor(private c: color, fuzziness: number) {
+    this.fuzziness = Math.min(fuzziness, 1);
+  }
 
   public scatter(ray_in: ray, rec: HitRecord): ray | null {
     const target: point3 = ray_in.direction.unit().reflect(rec.normal);
-    const scattered = new ray(rec.p, target.subtract(rec.p))
+    const scattered = new ray(rec.p, target.add(util.randomInUnitSphere().scale(this.fuzziness)));
     if (scattered.direction.dot(rec.normal) > 0) {
       rec.attenuation = this.c;
       return scattered;
     } else {
       return null;
     }
+  }
+}
+
+export class DieletricMaterial implements Material {
+  constructor(private refraction: number) {}
+
+  public scatter(ray_in: ray, rec: HitRecord): ray | null {
+    rec.attenuation = new color([1,1,1]);
     
+    const refraction_ratio = rec.front_face ? 1/this.refraction : this.refraction;
+
+    const unit_direction = ray_in.direction.unit();
+    const refracted = unit_direction.refract(rec.normal, refraction_ratio);
+    const scattered = new ray(rec.p, refracted);
+    return scattered;
   }
 }
 
 const GROUND_MATERIAL = new LambertianDiffuseMaterial(new color([0.8, 0.8, 0.0]));
-const CENTRE_MATERIAL = new LambertianDiffuseMaterial(new color([0.7, 0.3, 0.3]));
-const LEFT_MATERIAL = new MetalMaterial(new color([0.8, 0.8, 0.8]));
-const RIGHT_MATERIAL = new MetalMaterial(new color([0.8, 0.6, 0.2]));
+const CENTRE_MATERIAL = new DieletricMaterial(1.5);
+const LEFT_MATERIAL = new DieletricMaterial(1.5);
+const RIGHT_MATERIAL = new MetalMaterial(new color([0.8, 0.6, 0.2]), 1);

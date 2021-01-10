@@ -58,12 +58,12 @@ export class vec3 {
     return new vec3([this.e[0] * other.e[0], this.e[1] * other.e[1], this.e[2] * other.e[2]]);
   }
 
-  public scaleUp(scale: number): vec3 {
+  public scale(scale: number): vec3 {
     return new vec3([this.e[0] * scale, this.e[1] * scale, this.e[2] * scale]);
   }
 
   public scaleDown(scale: number): vec3 {
-    return this.scaleUp(1/scale);
+    return this.scale(1/scale);
   }
 
   public dot(other: vec3): number {
@@ -95,7 +95,14 @@ export class vec3 {
   }
 
   public reflect(n: vec3): vec3 {
-    return this.subtract(n.scaleUp(this.dot(n) * 2));
+    return this.subtract(n.scale(this.dot(n) * 2));
+  }
+
+  public refract(n: vec3, etai_over_etat: number) {
+    const cos_theta = Math.min(this.dot(n), 1.0);
+    const r_out_perp = (this.add(n.scale(cos_theta))).scale(etai_over_etat);
+    const r_out_para = n.scale(Math.sqrt(Math.abs(1 -r_out_perp.length_squared())));
+    return r_out_perp.add(r_out_para);
   }
 
   public toString(): string {

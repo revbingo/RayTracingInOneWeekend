@@ -15,6 +15,6 @@ export class Camera {
   }
 
   public getRay(u: number, v: number) {
-    return new ray(this.origin, this.lower_left_corner.add(this.horizontal.scaleUp(u)).add(this.vertical.scaleUp(v)).subtract(this.origin));
+    return new ray(this.origin, this.lower_left_corner.add(this.horizontal.scale(u)).add(this.vertical.scale(v)).subtract(this.origin));
   }
 }
