@@ -15,7 +15,6 @@ export class FileWriter {
 
       if (i % (scene.width * 20) == 0 || i == pixels.length - 1) {
         line_count += 20;
-        console.log(`Written ${line_count} lines`);
         await fs.appendFile(file_name, buffer);
         buffer = '';
       }

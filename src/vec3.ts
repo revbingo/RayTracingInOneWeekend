@@ -99,9 +99,10 @@ export class vec3 {
   }
 
   public refract(n: vec3, etai_over_etat: number) {
-    const cos_theta = Math.min(this.dot(n), 1.0);
-    const r_out_perp = (this.add(n.scale(cos_theta))).scale(etai_over_etat);
-    const r_out_para = n.scale(Math.sqrt(Math.abs(1 -r_out_perp.length_squared())));
+    const uv = this;
+    const cos_theta = Math.min(uv.negate().dot(n), 1.0);
+    const r_out_perp = uv.add(n.scale(cos_theta)).scale(etai_over_etat);
+    const r_out_para = n.scale(0 - Math.sqrt(Math.abs(1 - r_out_perp.length_squared())));
     return r_out_perp.add(r_out_para);
   }
 

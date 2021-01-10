@@ -33,6 +33,9 @@ export class Scene {
         }
         this.pixels.push(current_color);
       }
+      if (j % 20 == 0) {
+        console.log(`Calculated ${this.image_height - j} lines`);
+      }
     }
   }
 
@@ -136,13 +139,24 @@ export class DieletricMaterial implements Material {
     const refraction_ratio = rec.front_face ? 1/this.refraction : this.refraction;
 
     const unit_direction = ray_in.direction.unit();
-    const refracted = unit_direction.refract(rec.normal, refraction_ratio);
-    const scattered = new ray(rec.p, refracted);
+
+    const cos_theta = Math.min(unit_direction.negate().dot(rec.normal), 1.0);
+    const sin_theta = Math.sqrt(1 - (cos_theta * cos_theta));
+
+    const cannot_refract = (refraction_ratio * sin_theta) > 1;
+
+    const direction = cannot_refract ? 
+        unit_direction.reflect(rec.normal)
+      : unit_direction.refract(rec.normal, refraction_ratio);
+
+    // const direction = unit_direction.refract(rec.normal, refraction_ratio);
+    const scattered = new ray(rec.p, direction);
     return scattered;
   }
 }
 
 const GROUND_MATERIAL = new LambertianDiffuseMaterial(new color([0.8, 0.8, 0.0]));
-const CENTRE_MATERIAL = new DieletricMaterial(1.5);
+const CENTRE_MATERIAL = new LambertianDiffuseMaterial(new color([0.1, 0.2, 0.5]));
+// const CENTRE_MATERIAL = new DieletricMaterial(1.5);
 const LEFT_MATERIAL = new DieletricMaterial(1.5);
 const RIGHT_MATERIAL = new MetalMaterial(new color([0.8, 0.6, 0.2]), 1);
