@@ -8,10 +8,20 @@ export function randomInUnitSphere() {
   }
 }
 
+export function randomInHemisphere(normal: vec3) {
+  const in_unit_sphere = randomInUnitSphere();
+  return in_unit_sphere.dot(normal) > 0.0 ? in_unit_sphere : in_unit_sphere.negate();
+}
+
 export function randomVec3(min: number = 0, max: number = 1): vec3 {
   return new vec3([random(min, max), random(min, max), random(min, max)])
+}
+
+export function randomUnitVector() {
+  return randomInUnitSphere().unit();
 }
 
 export function random(min: number = 0, max: number = 1): number {
   return Math.random() * (max - min) + min;
 }
+

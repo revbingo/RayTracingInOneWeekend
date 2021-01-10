@@ -1,6 +1,6 @@
 import { vec3 as color, vec3 as point3, vec3 } from './vec3.js';
 import { ray } from './ray.js';
-import { HittableList, Sphere } from './hittable.js';
+import { HitRecord, HittableList, Sphere } from './hittable.js';
 import { Camera } from './camera.js';
 import * as util from './util.js';
 
@@ -10,6 +10,8 @@ export class Scene {
     new Sphere(new point3([0,0,-1]), 0.5),
     new Sphere(new point3([0, -100.5, -1]), 100)
   );
+
+  private diffuse: Diffuse = new NaiveDiffuse();
 
   private pixels: vec3[];
   private image_height: number;
@@ -37,12 +39,10 @@ export class Scene {
     if (depth <= 0) {
       return new color([0,0,0]);
     }
-    const rec = this.SCENE_LIST.hit(r, 0, Number.MAX_SAFE_INTEGER);
+    const rec = this.SCENE_LIST.hit(r, 0.001, Number.MAX_SAFE_INTEGER);
 
     if (rec) {
-      const target: point3 = rec.p.add(rec.normal).add(util.randomInUnitSphere());
-      const new_ray = new ray(rec.p, target.subtract(rec.p));
-      // console.log(`New target ${new_ray.toString()}`);
+      const new_ray = this.diffuse.nextRay(rec);
       return this.rayColor(new_ray, depth - 1).scaleDown(2);
       // return rec.normal.add(new color([1,1,1])).scaleDown(2);
     } else {
@@ -62,5 +62,30 @@ export class Scene {
   
   public getPixels(): vec3[] {
     return this.pixels;
+  }
+}
+
+export interface Diffuse {
+  nextRay(rec: HitRecord): ray;
+}
+
+export class SimpleDiffuse implements Diffuse {
+  public nextRay(rec: HitRecord): ray {
+    const target: point3 = rec.p.add(rec.normal).add(util.randomInUnitSphere());
+    return new ray(rec.p, target.subtract(rec.p));
+  }
+}
+
+export class LambertianDiffuse implements Diffuse {
+  public nextRay(rec: HitRecord): ray {
+    const target: point3 = rec.p.add(rec.normal).add(util.randomInUnitSphere().unit());
+    return new ray(rec.p, target.subtract(rec.p));
+  }
+}
+
+export class NaiveDiffuse implements Diffuse {
+  public nextRay(rec: HitRecord): ray {
+    const target: point3 = rec.p.add(util.randomInHemisphere(rec.normal));
+    return new ray(rec.p, target.subtract(rec.p));
   }
 }

@@ -22,13 +22,15 @@ export class FileWriter {
     }
   }
 
+  private readonly gammaFunction = Math.sqrt;
+
   private writeColor(color: color, samples_per_pixel: number): string {
     const scale = 1 / samples_per_pixel;
-    const r = color.x * scale;
-    const g = color.y * scale;
-    const b = color.z * scale;
+    const r = this.gammaFunction(color.x * scale);
+    const g = this.gammaFunction(color.y * scale);
+    const b = this.gammaFunction(color.z * scale);
 
-    return `${Math.trunc(255.999 * this.clamp(r, 0.0, 0.999))} ${Math.trunc(255.999 * this.clamp(g, 0.0, 0.999))} ${Math.trunc(255.999 * this.clamp(b, 0.0, 0.999))}\n`;
+    return `${Math.trunc(256 * this.clamp(r, 0.0, 0.999))} ${Math.trunc(256 * this.clamp(g, 0.0, 0.999))} ${Math.trunc(256 * this.clamp(b, 0.0, 0.999))}\n`;
   }
 
   private clamp(n: number, min: number, max: number) {
