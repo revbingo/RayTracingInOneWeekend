@@ -10,7 +10,8 @@
     "typescript": "^4.1.3"
   },
   "scripts": {
-    "go": "rm -f img.ppm && yarn tsc && node dist/index.js && open img.ppm"
+    "go": "rm -f img.ppm && yarn tsc && node dist/index.js && open img.ppm",
+    "profile": "rm -f img.ppm && yarn tsc && node --prof dist/index.js && open img.ppm"
   },
   "dependencies": {
     "gpu.js": "^2.11.0"

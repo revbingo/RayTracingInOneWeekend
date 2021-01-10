@@ -5,20 +5,7 @@ import { Camera } from './camera.js';
 import * as util from './util.js';
 
 export class Scene {
-  private readonly R = Math.cos(Math.PI/4);
-  private readonly SCENE_LIST = new HittableList(
-    new Sphere(new point3([0, -100.5, -1]), 100, GROUND_MATERIAL),
-    new Sphere(new point3([0,0,-1]), 0.5, CENTRE_MATERIAL),
-    new Sphere(new point3([-1,0,-1]), 0.5, LEFT_MATERIAL),
-    new Sphere(new point3([-1,0,-1]), -0.4, LEFT_MATERIAL),
-    new Sphere(new point3([1,0,-1]), 0.5, RIGHT_MATERIAL),
-    // new Sphere(new point3([-this.R, 0, -1]), this.R, LEFT_MATERIAL),
-    // new Sphere(new point3([this.R, 0, -1]), this.R, RIGHT_MATERIAL)
-  );
-
-  get hittableList() {
-    return this.SCENE_LIST;
-  }
+  constructor(public hittableList: HittableList) {}
 }
 
 export interface Material {
@@ -107,12 +94,3 @@ export class Dieletric implements Material {
     return r0 + ((1 - r0) * Math.pow((1 - cosine), 5));
   }
 }
-
-const GROUND_MATERIAL = new LambertianDiffuseMaterial(new color([0.8, 0.8, 0.0]));
-const CENTRE_MATERIAL = new LambertianDiffuseMaterial(new color([0.1, 0.2, 0.5]));
-const LEFT_MATERIAL = new Dieletric(1.5);
-// const LEFT_MATERIAL = new Metal(new color([1, 1, 1]), 0);
-const RIGHT_MATERIAL = new Metal(new color([0.8, 0.6, 0.2]), 0);
-
-// const LEFT_MATERIAL = new LambertianDiffuseMaterial(new color([0,0,1]))
-// const RIGHT_MATERIAL = new LambertianDiffuseMaterial(new color([1,0,0]))
