@@ -11,7 +11,7 @@ export class FileWriter {
     let buffer = '';
     let line_count = 0;
     for (let i = 0; i < pixels.length; i++) {
-      buffer += this.writeColor(pixels[i]);
+      buffer += this.writeColor(pixels[i], 1);
 
       if (i % (scene.width * 20) == 0 || i == pixels.length - 1) {
         line_count += 20;
@@ -22,7 +22,17 @@ export class FileWriter {
     }
   }
 
-  private writeColor(color: color): string {
-    return `${Math.trunc(255.999 * color.x)} ${Math.trunc(255.999 * color.y)} ${Math.trunc(255.999 * color.z)}\n`;
+  private writeColor(color: color, samples_per_pixel: number): string {
+    const scale = 1 / samples_per_pixel;
+    const r = color.x * scale;
+    const g = color.y * scale;
+    const b = color.z * scale;
+
+    return `${Math.trunc(255.999 * this.clamp(r, 0.0, 0.999))} ${Math.trunc(255.999 * this.clamp(g, 0.0, 0.999))} ${Math.trunc(255.999 * this.clamp(b, 0.0, 0.999))}\n`;
+  }
+
+  private clamp(n: number, min: number, max: number) {
+    return Math.min(Math.max(n, min), max);
   }
 }
+
