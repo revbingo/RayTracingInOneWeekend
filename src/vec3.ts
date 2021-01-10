@@ -1,4 +1,7 @@
 export class vec3 {
+
+  private readonly ZERO_TOLERANCE = 1e-8;
+
   constructor(private e: number[]) {}
 
   get x() {
@@ -83,6 +86,16 @@ export class vec3 {
 
   public length_squared(): number {
     return (this.e[0] * this.e[0]) + (this.e[1] * this.e[1]) + (this.e[2] * this.e[2]);
+  }
+
+  public near_zero(): boolean {
+    return (Math.abs(this.e[0]) < this.ZERO_TOLERANCE) 
+        && (Math.abs(this.e[1]) < this.ZERO_TOLERANCE) 
+        && (Math.abs(this.e[2]) < this.ZERO_TOLERANCE);
+  }
+
+  public reflect(n: vec3): vec3 {
+    return this.subtract(n.scaleUp(this.dot(n) * 2));
   }
 
   public toString(): string {

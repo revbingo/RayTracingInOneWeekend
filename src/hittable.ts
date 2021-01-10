@@ -1,22 +1,27 @@
 import { ray } from './ray.js';
-import { vec3 as point3, vec3 } from './vec3.js';
+import { Material, LambertianDiffuseMaterial } from './scene.js';
+import { vec3 as point3, vec3 as color, vec3 } from './vec3.js';
 
 export interface HitRecord {
   p: point3;
   normal: vec3;
   t: number;
   front_face: boolean;
+  material: Material;
+  attenuation: color;
 }
 
 export class HitRecordFactory {
-  public static generate(r: ray, p: point3, outward_normal: vec3, t: number) {
+  public static generate(r: ray, p: point3, outward_normal: vec3, t: number, material: Material) {
     const front_face = r.direction.dot(outward_normal) < 0;
     const normal = front_face ? outward_normal : outward_normal.negate();
     return {
       t, 
       p,
       normal,
-      front_face
+      front_face,
+      material,
+      attenuation: new color([1,1,1])
     };
   }
 }
@@ -45,7 +50,7 @@ export class HittableList extends Array<Hittable> {
 }
 
 export class Sphere extends Hittable {
-  constructor(private centre: point3, private radius: number) {
+  constructor(private centre: point3, private radius: number, public material: Material) {
     super();
   }
 
@@ -69,6 +74,6 @@ export class Sphere extends Hittable {
     }
     
     const p = r.at(root);
-    return HitRecordFactory.generate(r, p, p.subtract(this.centre).scaleDown(this.radius), root);
+    return HitRecordFactory.generate(r, p, p.subtract(this.centre).scaleDown(this.radius), root, this.material);
   }
 }

@@ -7,11 +7,12 @@ import * as util from './util.js';
 export class Scene {
   private readonly MAX_DEPTH = 10;
   private readonly SCENE_LIST = new HittableList(
-    new Sphere(new point3([0,0,-1]), 0.5),
-    new Sphere(new point3([0, -100.5, -1]), 100)
+    new Sphere(new point3([0, -100.5, -1]), 100, GROUND_MATERIAL),
+    new Sphere(new point3([0,0,-1]), 0.5, CENTRE_MATERIAL),
+    new Sphere(new point3([-1,0,-1]), 0.5, LEFT_MATERIAL),
+    new Sphere(new point3([1,0,-1]), 0.5, RIGHT_MATERIAL),
+    
   );
-
-  private diffuse: Diffuse = new NaiveDiffuse();
 
   private pixels: vec3[];
   private image_height: number;
@@ -42,9 +43,13 @@ export class Scene {
     const rec = this.SCENE_LIST.hit(r, 0.001, Number.MAX_SAFE_INTEGER);
 
     if (rec) {
-      const new_ray = this.diffuse.nextRay(rec);
-      return this.rayColor(new_ray, depth - 1).scaleDown(2);
-      // return rec.normal.add(new color([1,1,1])).scaleDown(2);
+      const new_ray = rec.material.scatter(r, rec);
+      if (new_ray) {
+        return this.rayColor(new_ray, depth - 1).multiply(rec.attenuation);
+      } else {
+        return new color([0,0,0]);
+      }
+      
     } else {
       const unit_direction = r.direction.unit();
       const t = 0.5 * (unit_direction.y + 1);
@@ -65,27 +70,62 @@ export class Scene {
   }
 }
 
-export interface Diffuse {
-  nextRay(rec: HitRecord): ray;
+export interface Material {
+  scatter(ray_in: ray, rec: HitRecord): ray | null;
+  // attenuate(c: color): color;
 }
 
-export class SimpleDiffuse implements Diffuse {
-  public nextRay(rec: HitRecord): ray {
+export class SimpleDiffuseMaterial implements Material {
+  constructor(private c: color) {}
+
+  public scatter(ray_in: ray, rec: HitRecord): ray | null {
     const target: point3 = rec.p.add(rec.normal).add(util.randomInUnitSphere());
+    rec.attenuation = this.c;
     return new ray(rec.p, target.subtract(rec.p));
   }
 }
 
-export class LambertianDiffuse implements Diffuse {
-  public nextRay(rec: HitRecord): ray {
-    const target: point3 = rec.p.add(rec.normal).add(util.randomInUnitSphere().unit());
-    return new ray(rec.p, target.subtract(rec.p));
+export class LambertianDiffuseMaterial implements Material {
+  constructor(private c: color) {}
+
+  public scatter(ray_in: ray, rec: HitRecord): ray | null {
+    const target: point3 = rec.normal.add(util.randomInUnitSphere().unit());
+    if (target.near_zero()) {
+      return new ray(rec.p, rec.normal);
+    }
+    
+    rec.attenuation = this.c;
+    return new ray(rec.p, target);
   }
 }
 
-export class NaiveDiffuse implements Diffuse {
-  public nextRay(rec: HitRecord): ray {
+export class NaiveDiffuseMaterial implements Material {
+  constructor(private c: color) {}
+
+  public scatter(ray_in: ray, rec: HitRecord): ray | null {
     const target: point3 = rec.p.add(util.randomInHemisphere(rec.normal));
+    rec.attenuation = this.c;
     return new ray(rec.p, target.subtract(rec.p));
   }
 }
+
+export class MetalMaterial implements Material {
+  constructor(private c: color) {}
+
+  public scatter(ray_in: ray, rec: HitRecord): ray | null {
+    const target: point3 = ray_in.direction.unit().reflect(rec.normal);
+    const scattered = new ray(rec.p, target.subtract(rec.p))
+    if (scattered.direction.dot(rec.normal) > 0) {
+      rec.attenuation = this.c;
+      return scattered;
+    } else {
+      return null;
+    }
+    
+  }
+}
+
+const GROUND_MATERIAL = new LambertianDiffuseMaterial(new color([0.8, 0.8, 0.0]));
+const CENTRE_MATERIAL = new LambertianDiffuseMaterial(new color([0.7, 0.3, 0.3]));
+const LEFT_MATERIAL = new MetalMaterial(new color([0.8, 0.8, 0.8]));
+const RIGHT_MATERIAL = new MetalMaterial(new color([0.8, 0.6, 0.2]));
