@@ -1,4 +1,5 @@
-import { FileWriter, Scene } from './file.js';
+import { FileWriter } from './file.js';
+import { Scene } from './scene.js';
 
 (async function() {
   const IMG_WIDTH = 400;
