@@ -1,9 +1,16 @@
 import { vec3 as color, vec3 as point3, vec3 } from './vec3.js';
 import { ray } from './ray.js';
-import { Hittable, HittableList, Sphere } from './hittable.js';
+import { HittableList, Sphere } from './hittable.js';
 import { Camera } from './camera.js';
+import * as util from './util.js';
 
 export class Scene {
+  private readonly MAX_DEPTH = 10;
+  private readonly SCENE_LIST = new HittableList(
+    new Sphere(new point3([0,0,-1]), 0.5),
+    new Sphere(new point3([0, -100.5, -1]), 100)
+  );
+
   private pixels: vec3[];
   private image_height: number;
 
@@ -19,25 +26,27 @@ export class Scene {
           const u = (i + Math.random()) / (this.image_width - 1);
           const v = (j + Math.random()) / (this.image_height - 1);
           const r = camera.getRay(u, v);
-          current_color.addMutate(this.rayColor(r));
+          current_color.addMutate(this.rayColor(r, this.MAX_DEPTH));
         }
         this.pixels.push(current_color);
       }
     }
   }
 
-  private readonly SCENE_LIST = new HittableList(
-    new Sphere(new point3([0,0,-1]), 0.5),
-    new Sphere(new point3([0, -100.5, -1]), 100)
-  );
+  private rayColor(r: ray, depth: number): color {
+    if (depth <= 0) {
+      return new color([0,0,0]);
+    }
+    const rec = this.SCENE_LIST.hit(r, 0, Number.MAX_SAFE_INTEGER);
 
-  private rayColor(ray: ray) {
-    const hit = this.SCENE_LIST.hit(ray, 0, Number.MAX_SAFE_INTEGER);
-
-    if (hit) {
-      return hit.normal.add(new color([1,1,1])).scaleDown(2);
+    if (rec) {
+      const target: point3 = rec.p.add(rec.normal).add(util.randomInUnitSphere());
+      const new_ray = new ray(rec.p, target.subtract(rec.p));
+      // console.log(`New target ${new_ray.toString()}`);
+      return this.rayColor(new_ray, depth - 1).scaleDown(2);
+      // return rec.normal.add(new color([1,1,1])).scaleDown(2);
     } else {
-      const unit_direction = ray.direction.unit();
+      const unit_direction = r.direction.unit();
       const t = 0.5 * (unit_direction.y + 1);
       return new color([1, 1, 1]).scaleUp(1-t).add(new color([0.5, 0.7, 1.0]).scaleUp(t));
     }
