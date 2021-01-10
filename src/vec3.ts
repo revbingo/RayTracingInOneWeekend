@@ -82,7 +82,7 @@ export class vec3 {
   }
 
   public length_squared(): number {
-    return this.e[0] * this.e[0] + this.e[1] * this.e[1] + this.e[2] * this.e[2];
+    return (this.e[0] * this.e[0]) + (this.e[1] * this.e[1]) + (this.e[2] * this.e[2]);
   }
 
   public toString(): string {

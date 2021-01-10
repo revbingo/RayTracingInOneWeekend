@@ -55,21 +55,29 @@ export class Scene {
   }
 
   private rayColor(ray: ray) {
-    if (this.hitSphere(new point3([0,0,-1]), 0.5, ray)) {
-      return new color([1,0,0]);
+    let t = this.hitSphere(new point3([0,0,-1]), 0.5, ray);
+    if (t > 0) {
+      console.log(t);
+      const N: vec3 = ray.at(t).subtract(new vec3([0,0,-1])).unit();
+      return new color([N.x + 1, N.y + 1, N.z + 1]).scaleDown(2);
+    } else {
+      const unit_direction = ray.direction.unit();
+      t = 0.5 * (unit_direction.y + 1);
+      return new color([1, 1, 1]).scaleUp(1-t).add(new color([0.5, 0.7, 1.0]).scaleUp(t));
     }
-    const unit_direction = ray.direction.unit();
-    const t = 0.5 * (unit_direction.y + 1);
-    return new color([1, 1, 1]).scaleUp(1-t).add(new color([0.5, 0.7, 1.0]).scaleUp(t));
   }
 
-  private hitSphere(centre: point3, radius: number, r: ray) {
+  private hitSphere(centre: point3, radius: number, r: ray): number {
     const oc: vec3 = r.origin.subtract(centre);
     const a = r.direction.dot(r.direction);
-    const b = 2 * oc.dot(r.direction);
+    const half_b = oc.dot(r.direction);
     const c = oc.dot(oc) - (radius * radius);
-    const discriminant = (b * b) - (4 * a * c);
-    return discriminant > 0;
+    const discriminant = (half_b * half_b) - (a * c);
+    if (discriminant < 0) {
+      return -1;
+    } else {
+      return (-half_b - Math.sqrt(discriminant)) / a;
+    }
   }
 
   get width() {
@@ -84,6 +92,3 @@ export class Scene {
     return this.pixels;
   }
 }
-
-
-// ray = [0,0,0] : [0, 0, 1]
