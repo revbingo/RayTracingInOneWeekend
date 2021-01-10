@@ -33,17 +33,15 @@ export abstract class Hittable {
 export class HittableList extends Array<Hittable> {
   public hit(r: ray, t_min: number, t_max: number): HitRecord | null {
     let hitRecord: HitRecord | null = null; 
-    let hit_anything = false;
     let closest_so_far = t_max;
 
-    this.forEach((object) => {
-      const newHit = object.hit(r, t_min, closest_so_far);
+    for (let i = this.length - 1; i >= 0; i-- ) {
+      const newHit = this[i].hit(r, t_min, closest_so_far);
       if (newHit) {
-        hit_anything = true;
         closest_so_far = newHit.t;
         hitRecord = newHit;
       }
-    })
+    }
 
     return hitRecord;
   }
