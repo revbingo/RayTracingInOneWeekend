@@ -5,10 +5,43 @@ export interface HitRecord {
   p: point3;
   normal: vec3;
   t: number;
+  front_face: boolean;
+}
+
+export class HitRecordFactory {
+  public static generate(r: ray, p: point3, outward_normal: vec3, t: number) {
+    const front_face = r.direction.dot(outward_normal) < 0;
+    const normal = front_face ? outward_normal : outward_normal.negate();
+    return {
+      t, 
+      p,
+      normal,
+      front_face
+    };
+  }
 }
 
 export abstract class Hittable {
   public abstract hit(r: ray, t_min: number, t_max: number): HitRecord | null;
+}
+
+export class HittableList extends Array<Hittable> {
+  public hit(r: ray, t_min: number, t_max: number): HitRecord | null {
+    let hitRecord: HitRecord | null = null; 
+    let hit_anything = false;
+    let closest_so_far = t_max;
+
+    this.forEach((object) => {
+      const newHit = object.hit(r, t_min, closest_so_far);
+      if (newHit) {
+        hit_anything = true;
+        closest_so_far = newHit.t;
+        hitRecord = newHit;
+      }
+    })
+
+    return hitRecord;
+  }
 }
 
 export class Sphere extends Hittable {
@@ -36,11 +69,6 @@ export class Sphere extends Hittable {
     }
     
     const p = r.at(root);
-    return {
-      p,
-      t: root,
-      normal: p.subtract(this.centre).scaleDown(this.radius)
-    };
-  
+    return HitRecordFactory.generate(r, p, p.subtract(this.centre).scaleDown(this.radius), root);
   }
 }

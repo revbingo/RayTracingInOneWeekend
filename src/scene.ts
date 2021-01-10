@@ -1,6 +1,6 @@
 import { vec3 as color, vec3 as point3, vec3 } from './vec3.js';
 import { ray } from './ray.js';
-import { Sphere } from './hittable.js';
+import { Hittable, HittableList, Sphere } from './hittable.js';
 
 export class Scene {
   private pixels: vec3[];
@@ -29,10 +29,12 @@ export class Scene {
     }
   }
 
-  private readonly THE_SPHERE = new Sphere(new point3([0,0,-1]), 0.5);
+  private readonly SCENE_LIST = new HittableList(
+    new Sphere(new point3([0,0,-1]), 0.5)
+  );
 
   private rayColor(ray: ray) {
-    const hit = this.THE_SPHERE.hit(ray, 0, 1000);
+    const hit = this.SCENE_LIST.hit(ray, 0, 1000);
 
     if (hit) {
       return new color([hit.normal.x + 1, hit.normal.y + 1, hit.normal.z + 1]).scaleDown(2);
