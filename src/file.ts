@@ -1,19 +1,20 @@
 import { promises as fs } from 'fs';
+import { Renderer } from './renderer.js';
 import { Scene } from './scene.js';
 import { vec3 as color } from './vec3.js';
 
 export class FileWriter {
-  public async writeFile(file_name: string, scene: Scene) {
-    await fs.writeFile(file_name, `P3\n${scene.width} ${scene.height}\n255\n`);
+  public async writeFile(file_name: string, renderer: Renderer) {
+    await fs.writeFile(file_name, `P3\n${renderer.width} ${renderer.height}\n255\n`);
   
-    const pixels = scene.getPixels();
+    const pixels = renderer.getPixels();
 
     let buffer = '';
     let line_count = 0;
     for (let i = 0; i < pixels.length; i++) {
-      buffer += this.writeColor(pixels[i], scene.samples_per_pixel);
+      buffer += this.writeColor(pixels[i], renderer.samples_per_pixel);
 
-      if (i % (scene.width * 20) == 0 || i == pixels.length - 1) {
+      if (i % (renderer.width * 20) == 0 || i == pixels.length - 1) {
         line_count += 20;
         await fs.appendFile(file_name, buffer);
         buffer = '';

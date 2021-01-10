@@ -1,4 +1,5 @@
 import { ray } from './ray.js';
+import { degrees_to_radians } from './util.js';
 import { vec3 as point3, vec3 } from './vec3.js';
 
 export class Camera {
@@ -7,7 +8,10 @@ export class Camera {
   private vertical: vec3;
   private lower_left_corner : point3;
 
-  constructor(aspect_ratio: number, viewport_height: number, focal_length: number) {
+  constructor(aspect_ratio: number, focal_length: number, vfov: number) {
+    const theta = degrees_to_radians(vfov);
+    const h = Math.tan(theta/2);
+    const viewport_height = 2 * h;
     const viewport_width = aspect_ratio * viewport_height;
     this.horizontal = new vec3([viewport_width, 0, 0]);
     this.vertical = new vec3([0, viewport_height, 0]);

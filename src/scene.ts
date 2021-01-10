@@ -5,71 +5,19 @@ import { Camera } from './camera.js';
 import * as util from './util.js';
 
 export class Scene {
-  private readonly MAX_DEPTH = 10;
+  private readonly R = Math.cos(Math.PI/4);
   private readonly SCENE_LIST = new HittableList(
-    new Sphere(new point3([0, -100.5, -1]), 100, GROUND_MATERIAL),
-    new Sphere(new point3([0,0,-1]), 0.5, CENTRE_MATERIAL),
-    new Sphere(new point3([-1,0,-1]), 0.5, LEFT_MATERIAL),
-    new Sphere(new point3([1,0,-1]), 0.5, RIGHT_MATERIAL),
-    
+    // new Sphere(new point3([0, -100.5, -1]), 100, GROUND_MATERIAL),
+    // new Sphere(new point3([0,0,-1]), 0.5, CENTRE_MATERIAL),
+    // new Sphere(new point3([-1,0,-1]), 0.5, LEFT_MATERIAL),
+    // new Sphere(new point3([-1,0,-1]), -0.4, LEFT_MATERIAL),
+    // new Sphere(new point3([1,0,-1]), 0.5, RIGHT_MATERIAL),
+    new Sphere(new point3([-this.R, 0, -1]), this.R, LEFT_MATERIAL),
+    new Sphere(new point3([this.R, 0, -1]), this.R, RIGHT_MATERIAL)
   );
 
-  private pixels: vec3[];
-  private image_height: number;
-
-  constructor(private image_width: number, aspect_ratio: number, camera: Camera, public samples_per_pixel: number = 100) {
-    this.image_height = image_width / aspect_ratio;
-    
-    this.pixels = [];
-
-    for (let j = this.image_height - 1; j >= 0; --j) {
-      for (let i = 0; i < image_width; ++i) {
-        let current_color: color = new color([0,0,0]);
-        for (let s = 0; s < samples_per_pixel; s++) {
-          const u = (i + Math.random()) / (this.image_width - 1);
-          const v = (j + Math.random()) / (this.image_height - 1);
-          const r = camera.getRay(u, v);
-          current_color.addMutate(this.rayColor(r, this.MAX_DEPTH));
-        }
-        this.pixels.push(current_color);
-      }
-      if (j % 20 == 0) {
-        console.log(`Calculated ${this.image_height - j} lines`);
-      }
-    }
-  }
-
-  private rayColor(r: ray, depth: number): color {
-    if (depth <= 0) {
-      return new color([0,0,0]);
-    }
-    const rec = this.SCENE_LIST.hit(r, 0.001, Number.MAX_SAFE_INTEGER);
-
-    if (rec) {
-      const new_ray = rec.material.scatter(r, rec);
-      if (new_ray) {
-        return this.rayColor(new_ray, depth - 1).multiply(rec.attenuation);
-      } else {
-        return new color([0,0,0]);
-      }
-      
-    } else {
-      const unit_direction = r.direction.unit();
-      const t = 0.5 * (unit_direction.y + 1);
-      return new color([1, 1, 1]).scale(1-t).add(new color([0.5, 0.7, 1.0]).scale(t));
-    }
-  }
-
-  get width() {
-    return this.image_width;
-  }
-
-  get height() {
-    return this.image_height;
-  }
-  
-  public getPixels(): vec3[] {
-    return this.pixels;
+  get hittableList() {
+    return this.SCENE_LIST;
   }
 }
 
@@ -112,7 +60,7 @@ export class NaiveDiffuseMaterial implements Material {
   }
 }
 
-export class MetalMaterial implements Material {
+export class Metal implements Material {
   private fuzziness: number;
   constructor(private c: color, fuzziness: number) {
     this.fuzziness = Math.min(fuzziness, 1);
@@ -130,7 +78,7 @@ export class MetalMaterial implements Material {
   }
 }
 
-export class DieletricMaterial implements Material {
+export class Dieletric implements Material {
   constructor(private refraction: number) {}
 
   public scatter(ray_in: ray, rec: HitRecord): ray | null {
@@ -145,7 +93,7 @@ export class DieletricMaterial implements Material {
 
     const cannot_refract = (refraction_ratio * sin_theta) > 1;
 
-    const direction = cannot_refract ? 
+    const direction = (cannot_refract || this.reflectance(cos_theta, refraction_ratio) > Math.random()) ? 
         unit_direction.reflect(rec.normal)
       : unit_direction.refract(rec.normal, refraction_ratio);
 
@@ -153,10 +101,19 @@ export class DieletricMaterial implements Material {
     const scattered = new ray(rec.p, direction);
     return scattered;
   }
+
+  public reflectance(cosine: number, ref_idx: number) {
+    const r0 = ((1 - ref_idx) / (1 + ref_idx)) * ((1 - ref_idx) / (1 + ref_idx));
+    return r0 + ((1 - r0) * Math.pow((1 - cosine), 5));
+  }
 }
 
+// const GROUND_MATERIAL = new LambertianDiffuseMaterial(new color([0.8, 0.8, 0.0]));
+// const CENTRE_MATERIAL = new LambertianDiffuseMaterial(new color([1, 0, 0]));
 const GROUND_MATERIAL = new LambertianDiffuseMaterial(new color([0.8, 0.8, 0.0]));
-const CENTRE_MATERIAL = new LambertianDiffuseMaterial(new color([0.1, 0.2, 0.5]));
-// const CENTRE_MATERIAL = new DieletricMaterial(1.5);
-const LEFT_MATERIAL = new DieletricMaterial(1.5);
-const RIGHT_MATERIAL = new MetalMaterial(new color([0.8, 0.6, 0.2]), 1);
+const CENTRE_MATERIAL = new Dieletric(1.5);
+// const LEFT_MATERIAL = new Metal(new color([1, 1, 1]), 0);
+// const RIGHT_MATERIAL = new Metal(new color([1, 1, 1]), 0);
+
+const LEFT_MATERIAL = new LambertianDiffuseMaterial(new color([0,0,1]))
+const RIGHT_MATERIAL = new LambertianDiffuseMaterial(new color([1,0,0]))
