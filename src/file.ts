@@ -11,7 +11,7 @@ export class FileWriter {
     let buffer = '';
     let line_count = 0;
     for (let i = 0; i < pixels.length; i++) {
-      buffer += this.writeColor(pixels[i], 1);
+      buffer += this.writeColor(pixels[i], scene.samples_per_pixel);
 
       if (i % (scene.width * 20) == 0 || i == pixels.length - 1) {
         line_count += 20;

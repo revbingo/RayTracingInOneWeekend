@@ -7,17 +7,21 @@ export class Scene {
   private pixels: vec3[];
   private image_height: number;
 
-  constructor(private image_width: number, aspect_ratio: number, camera: Camera) {
+  constructor(private image_width: number, aspect_ratio: number, camera: Camera, public samples_per_pixel: number = 100) {
     this.image_height = image_width / aspect_ratio;
     
     this.pixels = [];
 
     for (let j = this.image_height - 1; j >= 0; --j) {
       for (let i = 0; i < image_width; ++i) {
-        const u = i / (this.image_width - 1);
-        const v = j / (this.image_height - 1);
-        const r = camera.getRay(u, v);
-        this.pixels.push(this.rayColor(r));
+        let current_color: color = new color([0,0,0]);
+        for (let s = 0; s < samples_per_pixel; s++) {
+          const u = (i + Math.random()) / (this.image_width - 1);
+          const v = (j + Math.random()) / (this.image_height - 1);
+          const r = camera.getRay(u, v);
+          current_color.addMutate(this.rayColor(r));
+        }
+        this.pixels.push(current_color);
       }
     }
   }
