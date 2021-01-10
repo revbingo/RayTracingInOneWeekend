@@ -16,6 +16,10 @@ export class vec3 {
     return this.e[2];
   }
 
+  get arr() {
+    return this.e
+  }
+
   public negate() {
     return new vec3([-this.e[0], -this.e[1], -this.e[2]]);
   }
@@ -109,5 +113,4 @@ export class vec3 {
   public toString(): string {
     return `${this.e[0]} ${this.e[1]} ${this.e[2]}`
   }
-
 }

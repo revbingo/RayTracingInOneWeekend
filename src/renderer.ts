@@ -19,7 +19,6 @@ export class Renderer {
   }
 
   public render(camera: Camera, scene: Scene) {
-    const gpu = new GPU();
     this.hittableList = scene.hittableList;
     for (let j = this.image_height - 1; j >= 0; --j) {
       for (let i = 0; i < this.image_width; ++i) {
@@ -32,7 +31,7 @@ export class Renderer {
         }
         this.pixels.push(current_color);
       }
-      if (j % 20 == 0) {
+      if (j % 10 == 0) {
         console.log(`Calculated ${this.image_height - j} lines`);
       }
     }
