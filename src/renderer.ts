@@ -1,3 +1,4 @@
+import { GPU } from 'gpu.js';
 import { Camera } from './camera.js';
 import { HittableList } from './hittable.js';
 import { ray } from './ray.js';
@@ -18,6 +19,7 @@ export class Renderer {
   }
 
   public render(camera: Camera, scene: Scene) {
+    const gpu = new GPU();
     this.hittableList = scene.hittableList;
     for (let j = this.image_height - 1; j >= 0; --j) {
       for (let i = 0; i < this.image_width; ++i) {

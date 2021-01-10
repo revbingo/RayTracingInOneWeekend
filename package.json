@@ -11,5 +11,8 @@
   },
   "scripts": {
     "go": "rm -f img.ppm && yarn tsc && node dist/index.js && open img.ppm"
+  },
+  "dependencies": {
+    "gpu.js": "^2.11.0"
   }
 }
