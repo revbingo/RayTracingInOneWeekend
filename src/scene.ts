@@ -5,7 +5,7 @@ import { Camera } from './camera.js';
 import * as util from './util.js';
 
 export class Scene {
-  constructor(public hittableList: HittableList) {}
+  constructor(public hittableList: HittableList, public background: color) {}
 }
 
 export interface Material {
@@ -93,4 +93,18 @@ export class Dieletric implements Material {
     const r0 = ((1 - ref_idx) / (1 + ref_idx)) * ((1 - ref_idx) / (1 + ref_idx));
     return r0 + ((1 - r0) * Math.pow((1 - cosine), 5));
   }
+}
+
+export class Light implements Material {
+  private light: color;
+  constructor(private brightness: number, private color: color) {
+    this.light = color.scale(brightness);
+  }
+
+  scatter(ray_in: ray, rec: HitRecord): ray | null {
+    rec.emitted = this.light;
+
+    return null;
+  }
+
 }

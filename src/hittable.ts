@@ -10,7 +10,8 @@ export interface HitRecord {
   t: number;
   front_face: boolean;
   material: Material;
-  attenuation: color;
+  attenuation?: color;
+  emitted?: color;
 }
 
 export class HitRecordFactory {
@@ -22,8 +23,7 @@ export class HitRecordFactory {
       p,
       normal,
       front_face,
-      material,
-      attenuation: new color([1,1,1])
+      material
     };
   }
 }

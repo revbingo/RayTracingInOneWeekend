@@ -1,40 +1,23 @@
 import { promises as fs } from 'fs';
-import { Renderer } from './renderer.js';
-import { Scene } from './scene.js';
-import { vec3 as color } from './vec3.js';
+import { Image } from './image.js';
 
 export class FileWriter {
-  public async writeFile(file_name: string, renderer: Renderer) {
-    await fs.writeFile(file_name, `P3\n${renderer.width} ${renderer.height}\n255\n`);
+  public async writeFile(file_name: string, image: Image) {
+    await fs.writeFile(file_name, `P3\n${image.width} ${image.height}\n255\n`);
   
-    const pixels = renderer.getPixels();
+    const pixels = image.pixels;
 
     let buffer = '';
     let line_count = 0;
     for (let i = 0; i < pixels.length; i++) {
-      buffer += this.writeColor(pixels[i], renderer.samples_per_pixel);
+      buffer += `${pixels[i].get(0)} ${pixels[i].get(1)} ${pixels[i].get(2)}\n`
 
-      if (i % (renderer.width * 20) == 0 || i == pixels.length - 1) {
+      if (i % (image.width * 20) == 0 || i == pixels.length - 1) {
         line_count += 20;
         await fs.appendFile(file_name, buffer);
         buffer = '';
       }
     }
-  }
-
-  private readonly gammaFunction = Math.sqrt;
-
-  private writeColor(color: color, samples_per_pixel: number): string {
-    const scale = 1 / samples_per_pixel;
-    const r = this.gammaFunction(color.x * scale);
-    const g = this.gammaFunction(color.y * scale);
-    const b = this.gammaFunction(color.z * scale);
-
-    return `${Math.trunc(256 * this.clamp(r, 0.0, 0.999))} ${Math.trunc(256 * this.clamp(g, 0.0, 0.999))} ${Math.trunc(256 * this.clamp(b, 0.0, 0.999))}\n`;
-  }
-
-  private clamp(n: number, min: number, max: number) {
-    return Math.min(Math.max(n, min), max);
   }
 }
 
