@@ -1,6 +1,6 @@
 import { Camera } from './camera.js';
 import { FileWriter } from './file.js';
-import { Hittable, HittableList, Sphere } from './hittable.js';
+import { Hittable, HittableList, Moveable, Sphere } from './hittable.js';
 import { Image } from './image.js';
 import { Renderer } from './renderer.js';
 import { Dieletric, LambertianDiffuseMaterial, Light, Material, Metal, Scene } from './scene.js';
@@ -8,10 +8,10 @@ import { random, randomVec3 } from './util.js';
 import { vec3, vec3 as point3, vec3 as color } from './vec3.js';
 
 (async function() {
-  const IMG_WIDTH = 400;
+  const IMG_WIDTH = 600;
   const ASPECT_RATIO = 16/9;
-  const SAMPLES_PER_PIXEL = 50;
-  const MAX_DEPTH = 10;
+  const SAMPLES_PER_PIXEL = 100;
+  const MAX_DEPTH = 20;
 
   const scene = new Scene(finalScene(), new color([0.1,0.2,0.3]));
 
@@ -24,7 +24,7 @@ import { vec3, vec3 as point3, vec3 as color } from './vec3.js';
   const aperture = 0.1;
   const fov = 20;
 
-  const image = renderer.render(new Camera(lookfrom, lookat, vup, ASPECT_RATIO, fov, aperture, dist_to_focus), scene, new Image(IMG_WIDTH, ASPECT_RATIO));
+  const image = renderer.render(new Camera(lookfrom, lookat, vup, ASPECT_RATIO, fov, aperture, dist_to_focus, 1), scene, new Image(IMG_WIDTH, ASPECT_RATIO));
 
   await new FileWriter().writeFile('/Users/markpiper/sandbox/misc/raytrace/img.ppm', image);
 })();
@@ -62,10 +62,16 @@ function finalScene(): HittableList {
 
       if (centre.subtract(p).length() > 0.9) {
         let material: Material | null;
+        let movable: Moveable | undefined = undefined;
         
         if (choose_mat < 0.8) {
           const albedo: color = randomVec3().multiply(randomVec3());
           material = new LambertianDiffuseMaterial(albedo);
+          const movedCenter = centre.add(new vec3([0, random(0, 0.5), 0]))
+          movable = {
+            cen1: movedCenter,
+            time1: 1
+          }
         } else if (choose_mat < 0.95) {
           const albedo = randomVec3(0.5, 1);
           const fuzz = random(0, 0.5);
@@ -73,7 +79,7 @@ function finalScene(): HittableList {
         } else {
           material = new Dieletric(1.5);
         }
-        objects.push(new Sphere(centre, 0.2, material!));
+        objects.push(new Sphere(centre, 0.2, material!, movable));
       }
     }
   }

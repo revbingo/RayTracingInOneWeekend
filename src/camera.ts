@@ -1,5 +1,5 @@
 import { ray } from './ray.js';
-import { degrees_to_radians, randomInUnitDisk } from './util.js';
+import { degrees_to_radians, random, randomInUnitDisk } from './util.js';
 import { vec3 as point3, vec3 } from './vec3.js';
 
 export class Camera {
@@ -12,7 +12,7 @@ export class Camera {
   private u: vec3;
   private v: vec3;
 
-  constructor(lookfrom: point3, lookat: point3, vup: vec3, aspect_ratio: number, vfov: number, aperture: number, focus_dist: number) {
+  constructor(lookfrom: point3, lookat: point3, vup: vec3, aspect_ratio: number, vfov: number, aperture: number, focus_dist: number, private shutterTime: number) {
     const theta = degrees_to_radians(vfov);
     const h = Math.tan(theta/2);
     const viewport_height = 2 * h;
@@ -33,6 +33,6 @@ export class Camera {
   public getRay(u: number, v: number) {
     const rd = randomInUnitDisk().scale(this.lens_radius);
     const offset = this.u.scale(rd.x).add(this.v.scale(rd.y));
-    return new ray(this.origin.add(offset), this.lower_left_corner.add(this.horizontal.scale(u)).add(this.vertical.scale(v)).subtract(this.origin).subtract(offset));
+    return new ray(this.origin.add(offset), this.lower_left_corner.add(this.horizontal.scale(u)).add(this.vertical.scale(v)).subtract(this.origin).subtract(offset), random(0, this.shutterTime));
   }
 }

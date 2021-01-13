@@ -1,7 +1,6 @@
-import { vec3 as color, vec3 as point3, vec3 } from './vec3.js';
+import { vec3 as color, vec3 as point3 } from './vec3.js';
 import { ray } from './ray.js';
-import { HitRecord, HittableList, Sphere } from './hittable.js';
-import { Camera } from './camera.js';
+import { HitRecord, HittableList } from './hittable.js';
 import * as util from './util.js';
 
 export class Scene {
@@ -19,7 +18,7 @@ export class SimpleDiffuseMaterial implements Material {
   public scatter(ray_in: ray, rec: HitRecord): ray | null {
     const target: point3 = rec.p.add(rec.normal).add(util.randomInUnitSphere());
     rec.attenuation = this.c;
-    return new ray(rec.p, target.subtract(rec.p));
+    return new ray(rec.p, target.subtract(rec.p), ray_in.time);
   }
 }
 
@@ -29,11 +28,11 @@ export class LambertianDiffuseMaterial implements Material {
   public scatter(ray_in: ray, rec: HitRecord): ray | null {
     const target: point3 = rec.normal.add(util.randomInUnitSphere().unit());
     if (target.near_zero()) {
-      return new ray(rec.p, rec.normal);
+      return new ray(rec.p, rec.normal, ray_in.time);
     }
     
     rec.attenuation = this.c;
-    return new ray(rec.p, target);
+    return new ray(rec.p, target, ray_in.time);
   }
 }
 
@@ -43,7 +42,7 @@ export class NaiveDiffuseMaterial implements Material {
   public scatter(ray_in: ray, rec: HitRecord): ray | null {
     const target: point3 = rec.p.add(util.randomInHemisphere(rec.normal));
     rec.attenuation = this.c;
-    return new ray(rec.p, target.subtract(rec.p));
+    return new ray(rec.p, target.subtract(rec.p), ray_in.time);
   }
 }
 
@@ -55,7 +54,7 @@ export class Metal implements Material {
 
   public scatter(ray_in: ray, rec: HitRecord): ray | null {
     const target: point3 = ray_in.direction.unit().reflect(rec.normal);
-    const scattered = new ray(rec.p, target.add(util.randomInUnitSphere().scale(this.fuzziness)));
+    const scattered = new ray(rec.p, target.add(util.randomInUnitSphere().scale(this.fuzziness)), ray_in.time);
     if (scattered.direction.dot(rec.normal) > 0) {
       rec.attenuation = this.c;
       return scattered;
@@ -85,7 +84,7 @@ export class Dieletric implements Material {
       : unit_direction.refract(rec.normal, refraction_ratio);
 
     // const direction = unit_direction.refract(rec.normal, refraction_ratio);
-    const scattered = new ray(rec.p, direction);
+    const scattered = new ray(rec.p, direction, ray_in.time);
     return scattered;
   }
 

@@ -4,6 +4,7 @@ import { HittableList } from './hittable.js';
 import { Image } from './image.js';
 import { ray } from './ray.js';
 import { Scene } from './scene.js';
+import { random } from './util.js';
 import { vec3, vec3 as color } from './vec3.js';
 
 export class Renderer {

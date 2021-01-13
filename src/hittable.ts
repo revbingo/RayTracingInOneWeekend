@@ -37,17 +37,13 @@ export class HittableList extends Array<Hittable> {
     let hitRecord: HitRecord | null = null; 
     let closest_so_far = t_max;
 
-    // const gpu = new GPU({ mode: 'dev'});
-    // const hitKernel = gpu.createKernel(hit);
-    // hitKernel.setOutput([1]);
-    // hitKernel.addFunction(add);
-
     for (let i = this.length - 1; i >= 0; i-- ) {
       const sphere = this[i] as Sphere;
-      const root = hit(r.origin.arr, r.direction.arr, sphere.centre.arr, sphere.radius, t_min, closest_so_far) as number;
-      if (root == Number.MAX_SAFE_INTEGER) continue;
-      const p = r.at(root);
-      const newHit = HitRecordFactory.generate(r, p, new vec3(scaleDown(subtract(p.arr, sphere.centre.arr), sphere.radius)), root, sphere.material);
+      const rec = sphere.hit(r, t_min, closest_so_far);
+
+      if (!rec) continue;
+      const p = r.at(rec.t);
+      const newHit = HitRecordFactory.generate(r, p, new vec3(scaleDown(subtract(p.arr, sphere.centre.arr), sphere.radius)), rec.t, sphere.material);
       if (newHit) {
         closest_so_far = newHit.t;
         hitRecord = newHit;
@@ -58,8 +54,13 @@ export class HittableList extends Array<Hittable> {
   }
 }
 
+export interface Moveable {
+  cen1: point3,
+  time1: number
+}
+
 export class Sphere extends Hittable {
-  constructor(public centre: point3, public radius: number, public material: Material) {
+  constructor(public centre: point3, public radius: number, public material: Material, private movable?: Moveable) {
     super();
   }
 
@@ -68,7 +69,7 @@ export class Sphere extends Hittable {
     const dir: number[] = r.direction.arr;
 
     // ===
-    const oc: number[] = subtract(orig, this.centre.arr);
+    const oc: number[] = subtract(orig, this.centreAt(r.time).arr);
     const a = dot(dir, dir);
     const half_b = dot(oc, dir);
     const c = dot(oc, oc) - (this.radius * this.radius);
@@ -85,33 +86,38 @@ export class Sphere extends Hittable {
         return null;
       }
     }
-    // ===
-    
+
     const p = r.at(root);
-    return HitRecordFactory.generate(r, p, p.subtract(this.centre).scaleDown(this.radius), root, this.material);
+    return HitRecordFactory.generate(r, p, p.subtract(this.centreAt(r.time)).scaleDown(this.radius), root, this.material);
+  }
+
+  private centreAt(time: number): point3 {
+    return this.movable ? 
+        this.centre.add(this.movable.cen1.subtract(this.centre).scale(time))
+      : this.centre;
   }
 }
 
-function hit(orig: number[], dir: number[], centre: number[], radius: number, t_min: number, t_max: number): number {
-  // ===
-  const oc: number[] = subtract(orig, centre);
-  const a = dot(dir, dir);
-  const half_b = dot(oc, dir);
-  const c = dot(oc, oc) - (radius * radius);
-  const discriminant = (half_b * half_b) - (a * c);
-  if (discriminant < 0) {
-    return Number.MAX_SAFE_INTEGER;
-  }
+// function hit(orig: number[], dir: number[], centre: number[], radius: number, t_min: number, t_max: number): number {
+//   // ===
+//   const oc: number[] = subtract(orig, centre);
+//   const a = dot(dir, dir);
+//   const half_b = dot(oc, dir);
+//   const c = dot(oc, oc) - (radius * radius);
+//   const discriminant = (half_b * half_b) - (a * c);
+//   if (discriminant < 0) {
+//     return Number.MAX_SAFE_INTEGER;
+//   }
 
-  const sqrtd = Math.sqrt(discriminant);
-  let root = (-half_b - sqrtd) / a;
-  if (root < t_min || t_max < root) {
-    root = (-half_b + sqrtd) / a;
-    if (root < t_min || t_max < root) {
-      return Number.MAX_SAFE_INTEGER;
-    }
-  }
-  // ===
+//   const sqrtd = Math.sqrt(discriminant);
+//   let root = (-half_b - sqrtd) / a;
+//   if (root < t_min || t_max < root) {
+//     root = (-half_b + sqrtd) / a;
+//     if (root < t_min || t_max < root) {
+//       return Number.MAX_SAFE_INTEGER;
+//     }
+//   }
+//   // ===
 
-  return root;
-}
+  // return root;
+// }

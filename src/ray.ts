@@ -4,7 +4,7 @@ export class ray {
   private orig: point3;
   private dir: vec3;
 
-  constructor(origin: point3, direction: vec3) {
+  constructor(origin: point3, direction: vec3, public time: number = 0) {
     this.orig = new point3([origin.x, origin.y, origin.z]);
     this.dir = new vec3([direction.x, direction.y, direction.z]);
   }
