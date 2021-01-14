@@ -8,9 +8,9 @@ import { random, randomVec3 } from './util.js';
 import { vec3, vec3 as point3, vec3 as color } from './vec3.js';
 
 (async function() {
-  const IMG_WIDTH = 1200;
+  const IMG_WIDTH = 608;
   const ASPECT_RATIO = 16/9;
-  const SAMPLES_PER_PIXEL = 10000;
+  const SAMPLES_PER_PIXEL = 200;
   const MAX_DEPTH = 50;
 
   const scene = new Scene(finalScene(), new color([0.6,0.7,1]));

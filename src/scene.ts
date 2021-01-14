@@ -13,7 +13,6 @@ export class Scene {
 
 export interface Material {
   scatter(ray_in: ray, rec: HitRecord): ray | null;
-  // attenuate(c: color): color;
 }
 
 export class SimpleDiffuseMaterial implements Material {

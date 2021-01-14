@@ -132,16 +132,11 @@ export class BVHNode implements Hittable {
   }
 
   public hit(r: ray, t_min: number, t_max: number): HitRecord | null {
-    // console.log('Check if I hit the BVH ' + this.box.toString());
     if(!this.box?.hit(r, t_min, t_max)) return null;
-    // console.log('Yes I did');
 
     const left_rec = this.left!.hit(r, t_min, t_max);
     const right_rec = this.right!.hit(r, t_min, left_rec ? left_rec.t : t_max);
 
-    // if (right_rec) console.log('hit right');
-    // if (left_rec && !right_rec) console.log('hit left');
-    
     return right_rec || left_rec;
   }
 
