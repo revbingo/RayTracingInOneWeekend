@@ -1,10 +1,14 @@
 import { vec3 as color, vec3 as point3 } from './vec3.js';
 import { ray } from './ray.js';
-import { HitRecord, HittableList } from './hittable.js';
+import { BVHNode, HitRecord, Hittable, HittableList } from './hittable.js';
 import * as util from './util.js';
 
 export class Scene {
-  constructor(public hittableList: HittableList, public background: color) {}
+  public root: Hittable;
+
+  constructor(public hittableList: HittableList, public background: color) {
+    this.root = new BVHNode(hittableList, 0, 0);
+  }
 }
 
 export interface Material {

@@ -1,6 +1,6 @@
 import { GPU } from 'gpu.js';
 import { Camera } from './camera.js';
-import { HittableList } from './hittable.js';
+import { BVHNode, Hittable, HittableList } from './hittable.js';
 import { Image } from './image.js';
 import { ray } from './ray.js';
 import { Scene } from './scene.js';
@@ -9,12 +9,12 @@ import { vec3, vec3 as color } from './vec3.js';
 
 export class Renderer {
 
-  private hittableList?: HittableList;
+  private rootHittable?: Hittable;
 
   constructor(public samples_per_pixel: number = 100, private max_depth: number) {}
 
   public render(camera: Camera, scene: Scene, img: Image): Image {    
-    this.hittableList = scene.hittableList;
+    this.rootHittable = scene.root;
     for (let j = img.height - 1; j >= 0; --j) {
       console.log(`Calculating line ${j}`);
       for (let i = 0; i < img.width; ++i) {
@@ -40,7 +40,7 @@ export class Renderer {
       // console.log(`Ray terminated (max depth) after ${depth} bounces`)
       return this.BLACK;
     }
-    const rec = this.hittableList!.hit(r, 0.001, Number.MAX_SAFE_INTEGER);
+    const rec = this.rootHittable!.hit(r, 0.001, Number.MAX_SAFE_INTEGER);
 
     if (rec) {
       const new_ray = rec.material.scatter(r, rec);
@@ -51,9 +51,6 @@ export class Renderer {
         return rec.emitted || this.BLACK;
       } 
     } else {
-      // const unit_direction = r.direction.unit();
-      // const t = 0.5 * (unit_direction.y + 1);
-      // return new color([1, 1, 1]).scale(1-t).add(new color([0.5, 0.7, 1.0]).scale(t));
       // console.log(`Ray terminated (background) after ${this.max_depth - depth} bounces`)
       return background;
     }

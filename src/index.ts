@@ -8,12 +8,12 @@ import { random, randomVec3 } from './util.js';
 import { vec3, vec3 as point3, vec3 as color } from './vec3.js';
 
 (async function() {
-  const IMG_WIDTH = 600;
+  const IMG_WIDTH = 1200;
   const ASPECT_RATIO = 16/9;
-  const SAMPLES_PER_PIXEL = 100;
-  const MAX_DEPTH = 20;
+  const SAMPLES_PER_PIXEL = 10000;
+  const MAX_DEPTH = 50;
 
-  const scene = new Scene(finalScene(), new color([0.1,0.2,0.3]));
+  const scene = new Scene(finalScene(), new color([0.6,0.7,1]));
 
   const renderer = new Renderer(SAMPLES_PER_PIXEL, MAX_DEPTH);
 
@@ -24,7 +24,7 @@ import { vec3, vec3 as point3, vec3 as color } from './vec3.js';
   const aperture = 0.1;
   const fov = 20;
 
-  const image = renderer.render(new Camera(lookfrom, lookat, vup, ASPECT_RATIO, fov, aperture, dist_to_focus, 1), scene, new Image(IMG_WIDTH, ASPECT_RATIO));
+  const image = renderer.render(new Camera(lookfrom, lookat, vup, ASPECT_RATIO, fov, aperture, dist_to_focus, 0), scene, new Image(IMG_WIDTH, ASPECT_RATIO));
 
   await new FileWriter().writeFile('/Users/markpiper/sandbox/misc/raytrace/img.ppm', image);
 })();
@@ -35,7 +35,7 @@ function normalScene(): HittableList {
   const LEFT_MATERIAL = new Dieletric(1.5);
   const RIGHT_MATERIAL = new Metal(new color([0.8, 0.6, 0.2]), 0);
 
-  const SCENE_LIST = new HittableList(
+  const SCENE_LIST = new HittableList([
     new Sphere(new point3([0, -100.5, -1]), 100, GROUND_MATERIAL),
     new Sphere(new point3([0,0,-1]), 0.5, CENTRE_MATERIAL),
     new Sphere(new point3([-1,0,-1]), 0.5, LEFT_MATERIAL),
@@ -43,7 +43,7 @@ function normalScene(): HittableList {
     new Sphere(new point3([1,0,-1]), 0.5, RIGHT_MATERIAL),
     new Sphere(new point3([-1,0.25,-3]), 0.1, new Light(4, new color([1,1,1]))),
     new Sphere(new point3([0,3,-1.2]), 2, new Light(10, new color([0.4,0.2,1])))
-  );
+  ]);
 
   return SCENE_LIST;
 }
@@ -55,8 +55,9 @@ function finalScene(): HittableList {
   objects.push(new Sphere(new point3([0, -1000, 0]), 1000, GROUND_MATERIAL));
 
   const p = new point3([4, 0.2, 0]);
-  for (let a = -11; a < 11; a++) {
-    for (let b = -11; b < 11; b++) {
+  const BALLS = 11;
+  for (let a = -BALLS; a < BALLS; a++) {
+    for (let b = -BALLS; b < BALLS; b++) {
       const choose_mat = Math.random();
       const centre = new point3([a + 0.9 * Math.random(), 0.2, b + 0.9 * Math.random()])
 
@@ -66,7 +67,7 @@ function finalScene(): HittableList {
         
         if (choose_mat < 0.8) {
           const albedo: color = randomVec3().multiply(randomVec3());
-          material = new LambertianDiffuseMaterial(albedo);
+          material = new Metal(albedo, random());
           const movedCenter = centre.add(new vec3([0, random(0, 0.5), 0]))
           movable = {
             cen1: movedCenter,
