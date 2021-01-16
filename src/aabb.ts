@@ -7,8 +7,8 @@ export class aabb {
   public hit(r: ray, t_min: number, t_max: number) {
     for (let a = 0; a < 3; a++) {
       const invD = 1.0 / r.direction.get(a);
-      let t0 = (this.minimum.get(a) - r.origin.get(a)) * invD;
-      let t1 = (this.maximum.get(a) - r.origin.get(a)) * invD;
+      let t0 = (this.minimum.arr[a] - r.origin.arr[a]) * invD;
+      let t1 = (this.maximum.arr[a] - r.origin.arr[a]) * invD;
       if (invD < 0) {
         const tt = t0;
         t0 = t1;

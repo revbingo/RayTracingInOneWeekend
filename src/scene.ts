@@ -9,24 +9,10 @@ export class Scene {
   constructor(public hittableList: HittableList, public background: color) {
     this.root = new BVHNode(hittableList, 0, 0);
   }
-
-  public toJSON() {
-    return {
-      _type: 'Scene',
-      ...this
-    }
-  }
 }
 
 export abstract class Material {
   abstract scatter(ray_in: ray, rec: HitRecord): ray | null;
-
-  public toJSON() {
-    return {
-      _type: this.constructor.name,
-      ...this
-    }
-  }
 }
 
 export class SimpleDiffuseMaterial extends Material {

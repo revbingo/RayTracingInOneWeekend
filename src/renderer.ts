@@ -7,12 +7,10 @@ import colors from 'colors';
 
 export class Renderer {
 
-  private rootHittable?: Hittable;
-
   constructor(public samples_per_pixel: number = 100, private max_depth: number, private seed: number) {}
 
   public async render(img: Image): Promise<Image> {
-    const MAX_WORKERS = 4;
+    const MAX_WORKERS = 12;
     const linesPerWorker = Math.floor(img.height / MAX_WORKERS);
 
     const chunkStatus = new ChunkStatus();
@@ -55,27 +53,28 @@ export class ChunkStatus {
   }
 
   public startChunk(id: string) {
-    this.chunkStatus[id] = 'Starting...';
+    this.chunkStatus[id] = '---';
   }
 
   public updateChunk(id: string, pct: number) {
-    this.chunkStatus[id] = `${pct}%`;
+    this.chunkStatus[id] = `${pct.toString().padStart(2, '0')}%`;
   }
 
   public completeChunk(id: string) {
-    this.chunkStatus[id] = 'Done';
+    this.chunkStatus[id] = ' ✅ ';
   }
 
   public toString() {
     let output = '';
     for (const key of Object.keys(this.chunkStatus)) {
       colors.green;
-      const status = this.chunkStatus[key] === 'Done' ? ' Done '.bgGreen : ` ${this.chunkStatus[key]} `.red;
-      output += `|${status}| ` 
+      const status = this.chunkStatus[key] === 'Done' ? 'Done'.bgGreen : `${this.chunkStatus[key]}`.red;
+      output += `|${status}|` 
     }
     return output;
   }
 }
+
 function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }

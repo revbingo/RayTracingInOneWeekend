@@ -9,9 +9,9 @@ import { SeededRandom } from './util.js';
 (async function() {
   const IMG_WIDTH = 400;
   const ASPECT_RATIO = 16/9;
-  const SAMPLES_PER_PIXEL = 50;
-  const MAX_DEPTH = 5;
-  const SEED = 123456;
+  const SAMPLES_PER_PIXEL = 500;
+  const MAX_DEPTH = 10;
+  const SEED = 1;
 
   const renderer = new Renderer(SAMPLES_PER_PIXEL, MAX_DEPTH, SEED);
 
