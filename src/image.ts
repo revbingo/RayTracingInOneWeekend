@@ -15,17 +15,17 @@ export class Image {
   }
 
   public addPixels(y: number, pixels: number[][]) {
-    const colors = pixels.map(p => new color(p)).map(c => this.writeColor(c));
+    const colors = pixels.map(c => this.writeColor(c));
     const startIndex = (this.height - y) * this.width; 
     this.pixelArray.splice(startIndex, pixels.length, ...colors);
   }
 
   private writeColor(c: color): color {
-    const r = this.toRGB(this.gammaFunction(c.x));
-    const g = this.toRGB(this.gammaFunction(c.y));
-    const b = this.toRGB(this.gammaFunction(c.z));
+    const r = this.toRGB(this.gammaFunction(c[0]));
+    const g = this.toRGB(this.gammaFunction(c[1]));
+    const b = this.toRGB(this.gammaFunction(c[2]));
 
-    return new color([r,g,b]);
+    return [r,g,b];
   }
 
   private toRGB(c: number) {

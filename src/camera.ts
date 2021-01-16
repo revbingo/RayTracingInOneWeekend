@@ -1,6 +1,7 @@
 import { ray } from './ray.js';
 import { degrees_to_radians, random, randomInUnitDisk } from './util.js';
 import { vec3 as point3, vec3 } from './vec3.js';
+import { add, cross, scale, scaleDown, subtract, unit } from './vec3gpu.js';
 
 export class Camera {
   private origin: point3;
@@ -18,21 +19,21 @@ export class Camera {
     const viewport_height = 2 * h;
     const viewport_width = aspect_ratio * viewport_height;
 
-    this.w = lookfrom.subtract(lookat).unit();
-    this.u = vup.cross(this.w).unit();
-    this.v = this.w.cross(this.u);
+    this.w = unit(subtract(lookfrom, lookat));
+    this.u = unit(cross(vup, this.w));
+    this.v = cross(this.w, this.u);
 
     this.origin = lookfrom;
-    this.horizontal = this.u.scale(viewport_width).scale(focus_dist);
-    this.vertical = this.v.scale(viewport_height).scale(focus_dist);
-    this.lower_left_corner = this.origin.subtract(this.horizontal.scaleDown(2)).subtract(this.vertical.scaleDown(2)).subtract(this.w.scale(focus_dist));
+    this.horizontal = scale(scale(this.u, viewport_width), focus_dist);
+    this.vertical = scale(scale(this.v, viewport_height), focus_dist);
+    this.lower_left_corner = subtract(subtract(subtract(this.origin, scaleDown(this.horizontal, 2)), scaleDown(this.vertical, 2)), scale(this.w, focus_dist));
 
     this.lens_radius = aperture / 2;
   }
 
   public getRay(u: number, v: number) {
-    const rd = randomInUnitDisk().scale(this.lens_radius);
-    const offset = this.u.scale(rd.x).add(this.v.scale(rd.y));
-    return new ray(this.origin.add(offset), this.lower_left_corner.add(this.horizontal.scale(u)).add(this.vertical.scale(v)).subtract(this.origin).subtract(offset), random(0, this.shutterTime));
+    const rd = scale(randomInUnitDisk(), this.lens_radius);
+    const offset = add(scale(this.u, rd[0]), scale(this.v, rd[1]));
+    return new ray(add(this.origin, offset), subtract(subtract(add(add(this.lower_left_corner, scale(this.horizontal, u)), scale(this.vertical, v)), this.origin), offset), random(0, this.shutterTime));
   }
 }

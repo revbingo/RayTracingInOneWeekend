@@ -1,12 +1,13 @@
 import { vec3, vec3 as point3 } from './vec3.js';
+import { add, scale } from './vec3gpu.js';
 
 export class ray {
   private orig: point3;
   private dir: vec3;
 
   constructor(origin: point3, direction: vec3, public time: number = 0) {
-    this.orig = new point3([origin.x, origin.y, origin.z]);
-    this.dir = new vec3([direction.x, direction.y, direction.z]);
+    this.orig = origin;
+    this.dir = direction;
   }
 
   get origin() {
@@ -18,7 +19,7 @@ export class ray {
   }
 
   public at(t: number): point3 {
-    return this.orig.add(this.dir.scale(t));
+    return add(this.orig, scale(this.dir, t));
   }
 
   public toString() {

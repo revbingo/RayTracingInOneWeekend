@@ -18,8 +18,8 @@ export interface HitRecord {
 
 export class HitRecordFactory {
   public static generate(r: ray, p: point3, outward_normal: vec3, t: number, material: Material) {
-    const front_face = r.direction.dot(outward_normal) < 0;
-    const normal = front_face ? outward_normal : outward_normal.negate();
+    const front_face = dot(r.direction, outward_normal) < 0;
+    const normal = front_face ? outward_normal : negate(outward_normal);
     return {
       t, 
       p,
@@ -155,7 +155,7 @@ function box_compare(a: Hittable, b: Hittable, axis: number): boolean {
     throw new Error('No bounding box');
   }
 
-  return box_a.minimum.get(axis) < box_b.minimum.get(axis);
+  return box_a.minimum[axis] < box_b.minimum[axis];
 }
 function box_x_compare(a: Hittable, b: Hittable) {
   return box_compare(a, b, 0);
@@ -178,11 +178,11 @@ export class Sphere extends Hittable {
   }
 
   public hit(r: ray, t_min: number, t_max: number): HitRecord | null {
-    const orig: number[] = r.origin.arr;
-    const dir: number[] = r.direction.arr;
+    const orig: number[] = r.origin;
+    const dir: number[] = r.direction;
 
     // ===
-    const oc: number[] = subtract(orig, this.centreAt(r.time).arr);
+    const oc: number[] = subtract(orig, this.centreAt(r.time));
     const a = dot(dir, dir);
     const half_b = dot(oc, dir);
     const c = dot(oc, oc) - (this.radius * this.radius);
@@ -201,21 +201,21 @@ export class Sphere extends Hittable {
     }
 
     const p = r.at(root);
-    return HitRecordFactory.generate(r, p, p.subtract(this.centreAt(r.time)).scaleDown(this.radius), root, this.material);
+    return HitRecordFactory.generate(r, p, scaleDown(subtract(p, this.centreAt(r.time)), this.radius), root, this.material);
   }
 
   public bounding_box(t0: number, t1: number): aabb {
     const box0 = new aabb(
-      this.centre.subtract(new vec3([this.radius, this.radius, this.radius])),
-      this.centre.add(new vec3([this.radius, this.radius, this.radius])),
+      subtract(this.centre, [this.radius, this.radius, this.radius]),
+      add(this.centre, [this.radius, this.radius, this.radius]),
     )
     if (!this.movable) {
       return box0;
     }
 
     const box1 = new aabb(
-      this.centreAt(t1).subtract(new vec3([this.radius, this.radius, this.radius])),
-      this.centreAt(t1).add(new vec3([this.radius, this.radius, this.radius])),
+      subtract(this.centreAt(t1), [this.radius, this.radius, this.radius]),
+      add(this.centreAt(t1), [this.radius, this.radius, this.radius]),
     )
 
     return box0.combine(box1);
@@ -223,7 +223,7 @@ export class Sphere extends Hittable {
 
   private centreAt(time: number): point3 {
     return this.movable ? 
-        this.centre.add(this.movable.cen1.subtract(this.centre).scale(time))
+        add(this.centre, scale(subtract(this.movable.cen1, this.centre), time))
       : this.centre;
   }
 }

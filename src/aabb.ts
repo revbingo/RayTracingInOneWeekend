@@ -6,9 +6,9 @@ export class aabb {
 
   public hit(r: ray, t_min: number, t_max: number) {
     for (let a = 0; a < 3; a++) {
-      const invD = 1.0 / r.direction.get(a);
-      let t0 = (this.minimum.arr[a] - r.origin.arr[a]) * invD;
-      let t1 = (this.maximum.arr[a] - r.origin.arr[a]) * invD;
+      const invD = 1.0 / r.direction[a];
+      let t0 = (this.minimum[a] - r.origin[a]) * invD;
+      let t1 = (this.maximum[a] - r.origin[a]) * invD;
       if (invD < 0) {
         const tt = t0;
         t0 = t1;
@@ -22,17 +22,17 @@ export class aabb {
   }
 
   public combine(other: aabb): aabb {
-    const small: point3 = new point3([
-      Math.min(this.minimum.x, other.minimum.x),
-      Math.min(this.minimum.y, other.minimum.y),
-      Math.min(this.minimum.z, other.minimum.z)
-    ])
+    const small: point3 = [
+      Math.min(this.minimum[0], other.minimum[0]),
+      Math.min(this.minimum[1], other.minimum[1]),
+      Math.min(this.minimum[2], other.minimum[2])
+    ]
 
-    const big: point3 = new point3([
-      Math.max(this.maximum.x, other.maximum.x),
-      Math.max(this.maximum.y, other.maximum.y),
-      Math.max(this.maximum.z, other.maximum.z)
-    ])
+    const big: point3 = [
+      Math.max(this.maximum[0], other.maximum[0]),
+      Math.max(this.maximum[1], other.maximum[1]),
+      Math.max(this.maximum[2], other.maximum[2])
+    ]
 
     return new aabb(small, big);
   }

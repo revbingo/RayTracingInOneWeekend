@@ -1,32 +1,33 @@
 import { vec3 } from './vec3.js';
+import { dot, length_squared, negate, unit } from './vec3gpu.js';
 
 export function randomInUnitSphere() {
   while (true) {
     const p = randomVec3(-1, 1);
-    if (p.length_squared() >= 1) continue;
+    if (length_squared(p) >= 1) continue;
     return p;
   }
 }
 
 export function randomInHemisphere(normal: vec3) {
   const in_unit_sphere = randomInUnitSphere();
-  return in_unit_sphere.dot(normal) > 0.0 ? in_unit_sphere : in_unit_sphere.negate();
+  return dot(in_unit_sphere, normal) > 0.0 ? in_unit_sphere : negate(in_unit_sphere);
 }
 
 export function randomInUnitDisk() {
   while (true) {
-    const p = new vec3([random(-1, 1), random(-1, 1), 0]);
-    if (p.length_squared() >= 1) continue;
+    const p = [random(-1, 1), random(-1, 1), 0];
+    if (length_squared(p) >= 1) continue;
     return p;
   }
 }
 
 export function randomVec3(min: number = 0, max: number = 1): vec3 {
-  return new vec3([random(min, max), random(min, max), random(min, max)])
+  return [random(min, max), random(min, max), random(min, max)]
 }
 
 export function randomUnitVector() {
-  return randomInUnitSphere().unit();
+  return unit(randomInUnitSphere());
 }
 
 export function random(min: number = 0, max: number = 1): number {
@@ -55,6 +56,6 @@ export class SeededRandom {
   }
 
   public nextVec3(min: number = 0, max: number = 1) {
-    return new vec3([this.next(min, max), this.next(min, max), this.next(min, max)]);
+    return [this.next(min, max), this.next(min, max), this.next(min, max)];
   }
 }

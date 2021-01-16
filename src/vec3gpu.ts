@@ -61,3 +61,23 @@ export function refract(uv: number[], n: number[], etai_over_etat: number): numb
   const r_out_para = scale(n, 0 - Math.sqrt(Math.abs(1 - length_squared(r_out_perp))));
   return add(r_out_perp, r_out_para);
 }
+
+export function addMutate(a: number[], b: number[]): number[] {
+  a[0] += b[0];
+  a[1] += b[1];
+  a[2] += b[2];
+
+  return a;
+}
+
+export function multiplyMutate(a: number[], scale: number): number[] {
+  a[0] *= scale;
+  a[1] *= scale;
+  a[2] *= scale;
+
+  return a;
+}
+
+export function divideMutate(a: number[], scale: number): number[] {
+  return multiplyMutate(a, 1/scale);
+}

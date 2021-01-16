@@ -11,7 +11,7 @@ export class FileWriter {
     let buffer = '';
     let line_count = 0;
     for (let i = 0; i < pixels.length; i++) {
-      buffer += `${pixels[i].get(0)} ${pixels[i].get(1)} ${pixels[i].get(2)}\n`
+      buffer += `${pixels[i][0]} ${pixels[i][1]} ${pixels[i][2]}\n`
 
       if (i % (image.width * 20) == 0 || i == pixels.length - 1) {
         line_count += 20;
