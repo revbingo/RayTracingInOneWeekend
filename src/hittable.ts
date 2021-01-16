@@ -178,13 +178,9 @@ export class Sphere extends Hittable {
   }
 
   public hit(r: ray, t_min: number, t_max: number): HitRecord | null {
-    const orig: number[] = r.origin;
-    const dir: number[] = r.direction;
-
-    // ===
-    const oc: number[] = subtract(orig, this.centreAt(r.time));
-    const a = dot(dir, dir);
-    const half_b = dot(oc, dir);
+    const oc: number[] = subtract(r.origin, this.centreAt(r.time));
+    const a = dot(r.direction, r.direction);
+    const half_b = dot(oc, r.direction);
     const c = dot(oc, oc) - (this.radius * this.radius);
     const discriminant = (half_b * half_b) - (a * c);
     if (discriminant < 0) {

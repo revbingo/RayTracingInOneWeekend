@@ -80,7 +80,7 @@ function finalScene(seed: number): { scene: Scene, camera: Camera } {
   objects.push(new Sphere([0,1,0], 1, new Dieletric(1.5)));
   objects.push(new Sphere([-4,1,0], 1, new LambertianDiffuseMaterial([0.4, 0.2, 0.1])));
   objects.push(new Sphere([4,1,0], 1, new Metal([0.7, 0.6, 0.5], 0)));
-  objects.push(new Sphere([-1,5,0.1], 1, new Light(8, [0.4,0.2,1])));
+  objects.push(new Sphere([-1,5,0.1], 1, new Light(8, [0.8,0.6,1])));
 
   const lookfrom = [13,2,3];
   const lookat = [0,0,0];
@@ -91,7 +91,7 @@ function finalScene(seed: number): { scene: Scene, camera: Camera } {
   const camera = new Camera(lookfrom, lookat, vup, 16 / 9, fov, aperture, dist_to_focus, 0);
 
   return {
-    scene: new Scene(objects, [0.6,0.7,1]),
+    scene: new Scene(objects, [0.2,0.2,0.2]),
     camera
   };
 }
@@ -134,4 +134,4 @@ export function olaf(seed: number) {
   }
 }
 
-export const scene = finalScene(12345);
+export const scene = finalScene(4522215);

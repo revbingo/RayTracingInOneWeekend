@@ -7,9 +7,9 @@ import { scene } from './render_scene.js';
 import { SeededRandom } from './util.js';
 
 (async function() {
-  const IMG_WIDTH = 400;
+  const IMG_WIDTH = 1200;
   const ASPECT_RATIO = 16/9;
-  const SAMPLES_PER_PIXEL = 500;
+  const SAMPLES_PER_PIXEL = 100;
   const MAX_DEPTH = 10;
   const SEED = 1;
 

@@ -2,7 +2,7 @@ import { vec3 as color, vec3 as point3 } from './vec3.js';
 import { ray } from './ray.js';
 import { BVHNode, HitRecord, Hittable, HittableList } from './hittable.js';
 import * as util from './util.js';
-import { add, dot, near_zero, negate, reflect, refract, scale, subtract, unit } from './vec3gpu.js';
+import { add, addMutate, dot, near_zero, negate, reflect, refract, scale, subtract, unit } from './vec3gpu.js';
 
 export class Scene {
   public root: Hittable;
