@@ -7,6 +7,7 @@ export class FileWriter {
   
     const pixels = image.pixels;
 
+    console.log(`Writing ${pixels.length} pixels`)
     let buffer = '';
     let line_count = 0;
     for (let i = 0; i < pixels.length; i++) {

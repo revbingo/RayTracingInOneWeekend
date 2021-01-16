@@ -1,37 +1,61 @@
-import { GPU } from 'gpu.js';
-import { Camera } from './camera.js';
-import { BVHNode, Hittable, HittableList } from './hittable.js';
+import { Worker } from 'worker_threads';
+import { Hittable } from './hittable.js';
 import { Image } from './image.js';
 import { ray } from './ray.js';
-import { Scene } from './scene.js';
-import { random } from './util.js';
-import { vec3, vec3 as color } from './vec3.js';
+import { vec3 as color } from './vec3.js';
+import colors from 'colors';
 
 export class Renderer {
 
   private rootHittable?: Hittable;
 
-  constructor(public samples_per_pixel: number = 100, private max_depth: number) {}
+  constructor(public samples_per_pixel: number = 100, private max_depth: number, private seed: number) {
+    const initColorsForSomeReason = colors.green;
+  }
 
-  public render(camera: Camera, scene: Scene, img: Image): Image {    
-    this.rootHittable = scene.root;
-    for (let j = img.height - 1; j >= 0; --j) {
-      console.log(`Calculating line ${j}`);
-      for (let i = 0; i < img.width; ++i) {
-        let current_color: color = new color([0,0,0]);
-        for (let s = 0; s < this.samples_per_pixel; s++) {
-          const u = (i + Math.random()) / (img.width - 1);
-          const v = (j + Math.random()) / (img.height - 1);
-          const r = camera.getRay(u, v);
-          current_color.addMutate(this.rayColor(r, this.max_depth, scene.background));
+  public async render(img: Image): Promise<Image> {
+    const MAX_WORKERS = 4;
+    const linesPerWorker = Math.floor(img.height / MAX_WORKERS);
+    const chunkStatus: any = {};
+
+    let latch = 0;   
+    for (let j = img.height; j >= 1; j = j - linesPerWorker) {      
+      const lineMin = Math.max(0, j - (linesPerWorker - 1));
+      const lineMax = j;
+      const chunkId = `${lineMin} - ${lineMax}`;
+      const workerData = { lineMin: Math.max(0, j - (linesPerWorker - 1)), lineMax: j, imgWidth: img.width, imgHeight: img.height, samples: this.samples_per_pixel, max_depth: this.max_depth, seed: this.seed }
+      
+      chunkStatus[chunkId] = 'Starting...'
+      latch++;
+      const workerPort = new Worker('/Users/markpiper/sandbox/misc/raytrace/dist/worker.js', { workerData })
+
+      workerPort.on('message', (m) => {
+        if (m.type === 'complete') {
+          img.addPixels(j, m.data);
+          latch--;
+          chunkStatus[m.id] = 'Done';
+        } else if (m.type === 'update') {
+          chunkStatus[m.id] = `${m.data}%`
         }
-        img.addPixel(i, img.height - 1 - j, current_color.divideMutate(this.samples_per_pixel));
-      }
+      });
     }
 
+    while(latch > 0) {
+      await sleep(1000);
+      process.stdout.write(`Waiting for ${latch} chunks to complete ${this.formatStatus(chunkStatus)}\r`);
+    }
     return img;
   }
 
+  private formatStatus(chunks: any) {
+    let output = '';
+    for (const key of Object.keys(chunks)) {
+      colors.green;
+      const status = chunks[key] === 'Done' ? ' Done '.bgGreen : ` ${chunks[key]} `.red;
+      output += `|${status}| ` 
+    }
+    return output;
+  }
   private readonly BLACK = new color([0,0,0]);
   private readonly WHITE = new color([1,1,1]);
 
@@ -55,4 +79,8 @@ export class Renderer {
       return background;
     }
   }
+}
+
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }

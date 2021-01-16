@@ -113,4 +113,11 @@ export class vec3 {
   public toString(): string {
     return `${this.e[0]} ${this.e[1]} ${this.e[2]}`
   }
+
+  public toJSON(): any {
+    return {
+      _type: 'vec3',
+      e: this.e
+    }
+  }
 }

@@ -9,14 +9,30 @@ export class Scene {
   constructor(public hittableList: HittableList, public background: color) {
     this.root = new BVHNode(hittableList, 0, 0);
   }
+
+  public toJSON() {
+    return {
+      _type: 'Scene',
+      ...this
+    }
+  }
 }
 
-export interface Material {
-  scatter(ray_in: ray, rec: HitRecord): ray | null;
+export abstract class Material {
+  abstract scatter(ray_in: ray, rec: HitRecord): ray | null;
+
+  public toJSON() {
+    return {
+      _type: this.constructor.name,
+      ...this
+    }
+  }
 }
 
-export class SimpleDiffuseMaterial implements Material {
-  constructor(private c: color) {}
+export class SimpleDiffuseMaterial extends Material {
+  constructor(private c: color) {
+    super();
+  }
 
   public scatter(ray_in: ray, rec: HitRecord): ray | null {
     const target: point3 = rec.p.add(rec.normal).add(util.randomInUnitSphere());
@@ -25,8 +41,10 @@ export class SimpleDiffuseMaterial implements Material {
   }
 }
 
-export class LambertianDiffuseMaterial implements Material {
-  constructor(private c: color) {}
+export class LambertianDiffuseMaterial extends Material {
+  constructor(private c: color) {
+    super();
+  }
 
   public scatter(ray_in: ray, rec: HitRecord): ray | null {
     const target: point3 = rec.normal.add(util.randomInUnitSphere().unit());
@@ -39,8 +57,10 @@ export class LambertianDiffuseMaterial implements Material {
   }
 }
 
-export class NaiveDiffuseMaterial implements Material {
-  constructor(private c: color) {}
+export class NaiveDiffuseMaterial extends Material {
+  constructor(private c: color) {
+    super();
+  }
 
   public scatter(ray_in: ray, rec: HitRecord): ray | null {
     const target: point3 = rec.p.add(util.randomInHemisphere(rec.normal));
@@ -49,9 +69,10 @@ export class NaiveDiffuseMaterial implements Material {
   }
 }
 
-export class Metal implements Material {
+export class Metal extends Material {
   private fuzziness: number;
   constructor(private c: color, fuzziness: number) {
+    super();
     this.fuzziness = Math.min(fuzziness, 1);
   }
 
@@ -67,8 +88,10 @@ export class Metal implements Material {
   }
 }
 
-export class Dieletric implements Material {
-  constructor(private refraction: number) {}
+export class Dieletric extends Material {
+  constructor(private refraction: number) {
+    super();
+  }
 
   public scatter(ray_in: ray, rec: HitRecord): ray | null {
     rec.attenuation = new color([1,1,1]);
@@ -97,9 +120,10 @@ export class Dieletric implements Material {
   }
 }
 
-export class Light implements Material {
+export class Light extends Material {
   private light: color;
   constructor(private brightness: number, private color: color) {
+    super();
     this.light = color.scale(brightness);
   }
 

@@ -35,10 +35,11 @@ export abstract class Hittable {
   public abstract bounding_box(t0: number, t1: number): aabb | null;
 }
 
-export class HittableList implements Hittable {
+export class HittableList extends Hittable {
 
   public list: Hittable[] = [];
   constructor(hittables?: Hittable[]) {
+    super();
     if (hittables) {
       this.list.push(...hittables);
     }
@@ -85,12 +86,13 @@ export class HittableList implements Hittable {
   }
 }
 
-export class BVHNode implements Hittable {
+export class BVHNode extends Hittable {
   private box: aabb;
   private left: Hittable;
   private right: Hittable;
 
   constructor(hittables: HittableList, t0: number, t1: number) {
+    super();
     const axis = randomInt(0, 2);
     const comparator = (axis == 0) ? box_x_compare
                       : (axis == 1) ? box_y_compare

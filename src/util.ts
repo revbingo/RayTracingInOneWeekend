@@ -41,3 +41,20 @@ export function randomInt(min: number = 0, max: number = 1): number {
 export function degrees_to_radians(degrees: number) {
   return degrees * Math.PI / 180;
 }
+
+export class SeededRandom {
+  constructor(private seed: number) {}
+
+  public next(min: number = 0, max: number = 1) {
+    var t = this.seed += 0x6D2B79F5;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    const rand = ((t ^ t >>> 14) >>> 0) / 4294967296;
+    
+    return (rand * (max - min)) + min;
+  }
+
+  public nextVec3(min: number = 0, max: number = 1) {
+    return new vec3([this.next(min, max), this.next(min, max), this.next(min, max)]);
+  }
+}
