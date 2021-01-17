@@ -11,7 +11,7 @@ export class Renderer {
 
   public async render(img: Image): Promise<Image> {
     const MAX_WORKERS = 12;
-    const linesPerWorker = Math.floor(img.height / MAX_WORKERS);
+    const linesPerWorker = Math.ceil(img.height / MAX_WORKERS);
 
     const chunkStatus = new ChunkStatus();
 
