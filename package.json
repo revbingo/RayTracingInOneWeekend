@@ -11,7 +11,8 @@
   },
   "scripts": {
     "go": "rm -f img.ppm && yarn tsc && node dist/index.js && open img.ppm",
-    "profile": "rm -f img.ppm && yarn tsc && node --prof dist/index.js && open img.ppm"
+    "profile": "rm -f img.ppm && yarn tsc && node --prof dist/index.js && open img.ppm",
+    "debug": "rm -f img.ppm && yarn tsc && node --inspect-brk dist/index.js && open img.ppm"
   },
   "dependencies": {
     "colors": "^1.4.0",

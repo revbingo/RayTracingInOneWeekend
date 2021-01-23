@@ -5,7 +5,7 @@ import { SeededRandom } from './util.js';
 import { vec3, vec3 as color, vec3 as point3 } from './vec3.js';
 import { add, length, multiply, subtract } from './vec3gpu.js';
 
-function normalScene(seed: number): { scene: Scene, camera: Camera } {
+function normalScene(): { scene: Scene, camera: Camera } {
   const GROUND_MATERIAL = new LambertianDiffuseMaterial([0.8, 0.8, 0.0]);
   const CENTRE_MATERIAL = new LambertianDiffuseMaterial([0.1, 0.2, 0.5]);
   const LEFT_MATERIAL = new Dieletric(1.5);
@@ -77,10 +77,10 @@ function finalScene(seed: number): { scene: Scene, camera: Camera } {
     }
   }
 
-  objects.push(new Sphere([0,1,0], 1, new Dieletric(1.5)));
+  objects.push(new Sphere([4,1,0], 1, new Dieletric(1.5)));
   objects.push(new Sphere([-4,1,0], 1, new LambertianDiffuseMaterial([0.4, 0.2, 0.1])));
-  objects.push(new Sphere([4,1,0], 1, new Metal([0.7, 0.6, 0.5], 0)));
-  objects.push(new Sphere([-1,5,0.1], 1, new Light(8, [0.8,0.6,1])));
+  objects.push(new Sphere([0,1,0], 1, new Metal([0.7, 0.6, 0.5], 0)));
+  objects.push(new Sphere([-1,7,0.1], 1, new Light(6, [0.8,0.6,1])));
 
   const lookfrom = [13,2,3];
   const lookat = [0,0,0];
@@ -96,7 +96,7 @@ function finalScene(seed: number): { scene: Scene, camera: Camera } {
   };
 }
 
-export function olaf(seed: number) {
+export function olaf() {
   const GROUND_MATERIAL = new LambertianDiffuseMaterial([0.8, 0.8, 0.8]);
   
   const objects: HittableList = new HittableList();
@@ -134,4 +134,27 @@ export function olaf(seed: number) {
   }
 }
 
-export const scene = finalScene(4522215);
+export function background() {
+  const GROUND_MATERIAL = new LambertianDiffuseMaterial([0.8, 0.8, 0.8]);
+  
+  const objects: HittableList = new HittableList();
+
+  objects.push(new Sphere([-2, 0, -1], 1, new LambertianDiffuseMaterial([0,0,1])))
+  objects.push(new Sphere([2, 0, -1], 1, new LambertianDiffuseMaterial([1,0,0])))
+
+  const lookfrom = [2,3,2.2];
+  const lookat = [0,1,-1];
+  const vup = [0,1,0];
+  const dist_to_focus = 4;
+  const aperture = 0.1;
+  const fov = 90;
+  const camera = new Camera(lookfrom, lookat, vup, 16 / 9, fov, aperture, dist_to_focus, 0);
+
+
+  return {
+    scene: new Scene(objects, [0.3, 0.8, 1]),
+    camera
+  }
+}
+
+export const scene = finalScene(123);

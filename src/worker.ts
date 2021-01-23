@@ -3,7 +3,7 @@ import { ray } from './ray.js';
 import { Scene } from './scene.js';
 import { vec3 as color } from './vec3.js';
 import { scene } from './render_scene.js';
-import { add, addMutate, divideMutate, multiply } from './vec3gpu.js';
+import { add, addMutate, divideMutate, multiply, near_zero, subtract } from './vec3gpu.js';
 
 const BLACK = [0,0,0];
 const WHITE = [1,1,1];
@@ -15,23 +15,26 @@ const WHITE = [1,1,1];
   const camera = scene.camera;
   const objects = scene.scene;
 
+  let total_samples = 0;
   const returnArray = [];
   for (let j = lineMax; j >= lineMin; j--) {
    for (let i = 0; i < imgWidth; ++i) {
       let current_color: color = [0,0,0];
-      for (let s = 0; s < samples; s++) {
+      let samples_taken = 1;
+      for (let s = 0; s < samples; s++, ++samples_taken, ++total_samples) {
         const u = (i + Math.random()) / (imgWidth - 1);
         const v = (j + Math.random()) / (imgHeight - 1);
         const r = camera.getRay(u, v);
-        addMutate(current_color, rayColor(r, max_depth, objects));
+        const color = rayColor(r, max_depth, objects);
+      
+        addMutate(current_color, color);
       }
-      // img.addPixel(i, img.height - 1 - j, current_color.divideMutate(samples));
-      returnArray.push(divideMutate(current_color, samples));
+      returnArray.push(divideMutate(current_color, samples_taken));
     }
     parentPort?.postMessage({ type: 'update', id: chunkId, data: Math.round((lineMax - j) * 100/(lineMax - lineMin)) })
   }
 
-  parentPort?.postMessage({ type: 'complete', id: chunkId, data: returnArray });
+  parentPort?.postMessage({ type: 'complete', id: chunkId, data: returnArray, samples: total_samples });
 })();
 
 function rayColor(r: ray, depth: number, scene: Scene): color {
@@ -44,13 +47,14 @@ function rayColor(r: ray, depth: number, scene: Scene): color {
   if (rec) {
     const new_ray = rec.material.scatter(r, rec);
     if (new_ray) {
-      return add(multiply(rayColor(new_ray, depth - 1, scene), rec.attenuation || WHITE), rec.emitted || BLACK);
+      const recast = rayColor(new_ray, depth - 1, scene);
+      return add(multiply(recast, rec.attenuation || WHITE), rec.emitted || BLACK);
     } else {
       // console.log(`Ray terminated (emitted) after ${this.max_depth - depth} bounces`)
-      return rec.emitted || BLACK;
+      return BLACK;
     } 
   } else {
-    // console.log(`Ray terminated (background) after ${this.max_depth - depth} bounces`)
+    // console.log(`Ray terminated (background) after ${depth} bounces`)
     return scene.background;
   }
 }

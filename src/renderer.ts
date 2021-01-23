@@ -30,7 +30,7 @@ export class Renderer {
         if (m.type === 'complete') {
           img.addPixels(j, m.data);
           latch--;
-          chunkStatus.completeChunk(m.id);
+          chunkStatus.completeChunk(m.id, m.samples);
         } else if (m.type === 'update') {
           chunkStatus.updateChunk(m.id, m.data);
         }
@@ -60,8 +60,8 @@ export class ChunkStatus {
     this.chunkStatus[id] = `${pct.toString().padStart(2, '0')}%`;
   }
 
-  public completeChunk(id: string) {
-    this.chunkStatus[id] = ' ✅ ';
+  public completeChunk(id: string, total_samples: number) {
+    this.chunkStatus[id] = ` ✅ ${total_samples}`;
   }
 
   public toString() {
