@@ -1,7 +1,7 @@
 import { Camera } from './camera.js';
 import { HittableList, Sphere, Moveable } from './hittable.js';
 import { LambertianDiffuseMaterial, Dieletric, Metal, Light, Material, Scene } from './scene.js';
-import { SolidTexture } from './textures.js';
+import { CheckerTexture, SolidTexture } from './textures.js';
 import { SeededRandom } from './util.js';
 import { vec3, vec3 as color, vec3 as point3 } from './vec3.js';
 import { add, length, multiply, subtract } from './vec3gpu.js';
@@ -42,7 +42,7 @@ function normalScene(): { scene: Scene, camera: Camera } {
 
 function finalScene(seed: number): { scene: Scene, camera: Camera } {
   const rand = new SeededRandom(seed);
-  const GROUND_MATERIAL = new LambertianDiffuseMaterial(new SolidTexture([1, 1, 1]));
+  const GROUND_MATERIAL = new LambertianDiffuseMaterial(new CheckerTexture([0.2, 0.3, 0.1], [0.9, 0.9, 0.9]));
   
   const objects: HittableList = new HittableList();
   objects.push(new Sphere([0, -1000, 0], 1000, GROUND_MATERIAL));
@@ -81,7 +81,7 @@ function finalScene(seed: number): { scene: Scene, camera: Camera } {
   objects.push(new Sphere([4,1,0], 1, new Dieletric(1.5)));
   objects.push(new Sphere([-4,1,0], 1, new LambertianDiffuseMaterial(new SolidTexture([0.4, 0.2, 0.1]))));
   objects.push(new Sphere([0,1,0], 1, new Metal([0.7, 0.6, 0.5], 0)));
-  objects.push(new Sphere([-1,7,0.1], 1, new Light(6, [0.8,0.6,1])));
+  objects.push(new Sphere([0,3.5,-5], 1, new Light(10, [0.8,0.6,1])));
 
   const lookfrom = [13,2,3];
   const lookat = [0,0,0];
@@ -92,7 +92,7 @@ function finalScene(seed: number): { scene: Scene, camera: Camera } {
   const camera = new Camera(lookfrom, lookat, vup, 16 / 9, fov, aperture, dist_to_focus, 0);
 
   return {
-    scene: new Scene(objects, [0.2,0.2,0.2]),
+    scene: new Scene(objects, [0.1,0.1,0.1]),
     camera
   };
 }

@@ -9,7 +9,23 @@ export class SolidTexture extends Texture {
     super();
   }
 
-  value(u: number, v: number, p: color): color {
+  value(u: number, v: number, p: point3): color {
     return this.c;
+  }
+  
+}
+
+export class CheckerTexture extends Texture {
+  constructor(private even: color, private odd: color) {
+    super();
+  }
+
+  value(u: number, v: number, p: point3): color {
+    const sines = Math.sin(10 * p[0]) * Math.sin(10 * p[1]) * Math.sin(10 * p[2])
+    if (sines < 0) {
+      return this.odd;
+    } else {
+      return this.even;
+    }
   }
 }
