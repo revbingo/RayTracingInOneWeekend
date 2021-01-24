@@ -6,8 +6,8 @@ import { Renderer } from './renderer.js';
 (async function() {
   const IMG_WIDTH = 800;
   const ASPECT_RATIO = 16/9;
-  const SAMPLES_PER_PIXEL = 600;
-  const MAX_DEPTH = 10;
+  const SAMPLES_PER_PIXEL = 1000;
+  const MAX_DEPTH = 500;
   const SEED = 1;
 
   const renderer = new Renderer(SAMPLES_PER_PIXEL, MAX_DEPTH, SEED);

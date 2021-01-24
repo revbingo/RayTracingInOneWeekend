@@ -3,7 +3,7 @@ import { ray } from './ray.js';
 import { Material, LambertianDiffuseMaterial } from './scene.js';
 import { vec3 as point3, vec3 as color, vec3 } from './vec3.js';
 import { add, scale, subtract, dot, negate, scaleDown } from './vec3gpu.js';
-import { randomInt } from './util.js';
+import { degrees_to_radians, randomInt } from './util.js';
 import { Texture } from './textures.js';
 
 export interface HitRecord {
@@ -349,6 +349,106 @@ export class Box extends Hittable {
     return new aabb(this.p0, this.p1);
   }
 
+}
+
+export class Translate extends Hittable {
+
+  constructor(private p: Hittable, private offset: vec3) {
+    super();
+  }
+
+  public hit(r: ray, t_min: number, t_max: number): HitRecord | null {
+    const moved_r = new ray(subtract(r.origin, this.offset), r.direction, r.time);
+
+    const rec = this.p.hit(moved_r, t_min, t_max);
+    if (!rec) {
+      return null;
+    }
+
+    return HitRecordFactory.generate(moved_r, add(rec.p, this.offset), rec.normal, rec.t, rec.material, rec.coords);
+  }
+
+  public bounding_box(t0: number, t1: number): aabb | null {
+    const output_box = this.p.bounding_box(t0, t1);
+
+    if (!output_box) return null;
+
+    return new aabb(add(output_box.minimum, this.offset), add(output_box.maximum, this.offset))
+  }
+}
+
+export class RotateY extends Hittable {
+  private sin_theta: number;
+  private cos_theta: number;
+  private bbox: aabb | null;
+
+  constructor(private p: Hittable, angle: number) {
+    super();
+    const radians = degrees_to_radians(angle);
+    this.sin_theta = Math.sin(radians);
+    this.cos_theta = Math.cos(radians);
+    
+    this.bbox = this.p.bounding_box(0, 1)
+
+    if (!this.bbox) return;
+
+    const min = [Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER];
+    const max = [-Number.MAX_SAFE_INTEGER, -Number.MAX_SAFE_INTEGER, -Number.MAX_SAFE_INTEGER];
+
+    for (let i = 0; i < 2 ; i++) {
+      for (let j = 0; j < 2; j++) {
+        for (let k = 0; k < 2; k++) {
+          const x = i*this.bbox.maximum[0] + (1-i)*this.bbox.minimum[0];
+          const y = j*this.bbox.maximum[1] + (1-j)*this.bbox.minimum[1];
+          const z = k*this.bbox.maximum[2] + (1-k)*this.bbox.minimum[2];
+
+          const newx = this.cos_theta * x + this.sin_theta * z;
+          const newz = -this.sin_theta * x + this.cos_theta * z;
+
+          const tester = [newx, y, newz];
+
+          for (let c = 0; c < 3; c++) {
+            min[c] = Math.min(min[c], tester[c]);
+            max[c] = Math.max(max[c], tester[c]);
+          }
+        }
+      }
+    }
+
+    this.bbox = new aabb(min, max);
+  }
+
+  public hit(r: ray, t_min: number, t_max: number): HitRecord | null {
+    const origin = [r.origin[0], r.origin[1], r.origin[2]];
+    const direction = [r.direction[0], r.direction[1], r.direction[2]];
+
+    origin[0] = this.cos_theta * r.origin[0] - this.sin_theta * r.origin[2];
+    origin[2] = this.sin_theta * r.origin[0] + this.cos_theta * r.origin[2];
+
+    direction[0] = this.cos_theta * r.direction[0] - this.sin_theta * r.direction[2];
+    direction[2] = this.sin_theta * r.direction[0] + this.cos_theta * r.direction[2];
+
+    const rotated_r = new ray(origin, direction, r.time);
+
+    const rec = this.p.hit(rotated_r, t_min, t_max);
+
+    if (!rec) return null;
+
+    const p = [rec.p[0], rec.p[1], rec.p[2]];
+    const normal = [rec.normal[0], rec.normal[1], rec.normal[2]];
+
+    p[0] = this.cos_theta * rec.p[0] + this.sin_theta * rec.p[2];
+    p[2] = -this.sin_theta * rec.p[0] + this.cos_theta * rec.p[2];
+
+    normal[0] = this.cos_theta * rec.normal[0] + this.sin_theta * rec.normal[2];
+    normal[2] = -this.sin_theta * rec.normal[0] + this.cos_theta * rec.normal[2];
+
+    return HitRecordFactory.generate(rotated_r, p, normal, rec.t, rec.material, rec.coords);
+  }
+
+  public bounding_box(t0: number, t1: number): aabb | null {
+    return this.bbox;
+  }
 }
 // function hit(orig: number[], dir: number[], centre: number[], radius: number, t_min: number, t_max: number): number {
 //   // ===
