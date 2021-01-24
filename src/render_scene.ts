@@ -156,15 +156,17 @@ export function cornell_box() {
   const green = new LambertianDiffuseMaterial(new SolidTexture([0.12, 0.45, 0.15]));
   const light = new Light(15, [1,1,1]);
 
-  objects.push(new YZRectangle(0,555, 0, 555, 555, green));
-  objects.push(new YZRectangle(0,555, 0, 555, 0, red));
-  objects.push(new XZRectangle(213, 343, 227, 332, 554, light));
-  objects.push(new XZRectangle(0,555, 0, 555, 0, white));
-  objects.push(new XZRectangle(0,555, 0, 555, 555, white));
-  objects.push(new XYRectangle(0,555, 0, 555, 555, white));
+  objects.push(new YZRectangle(0, 555, 0, 555, 555, green)); //left wall
+  objects.push(new YZRectangle(0, 555, 0, 555, 0, red));   // right wall
+  
+  objects.push(new XZRectangle(0, 555, 0, 555, 0, white)); //floor
+  objects.push(new XZRectangle(0, 555, 0, 555, 555, white)); // ceiling
+  objects.push(new XYRectangle(0, 555, 0, 555, 555, white));  //back wall
 
-  // objects.push(new Box([130, 0, 65], [295, 165, 230], white));
-  // objects.push(new Box([265, 0, 295], [430, 330, 460], white));
+  objects.push(new XZRectangle(213, 343, 227, 332, 554, light)); //light
+
+  objects.push(new Box([130, 0, 65], [295, 165, 230], white));
+  objects.push(new Box([265, 0, 295], [430, 330, 460], white));
 
   return {
     scene: new Scene(new HittableList(objects), [0,0,0]),

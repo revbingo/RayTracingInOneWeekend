@@ -4,9 +4,9 @@ import { Image } from './image.js';
 import { Renderer } from './renderer.js';
 
 (async function() {
-  const IMG_WIDTH = 400;
+  const IMG_WIDTH = 800;
   const ASPECT_RATIO = 16/9;
-  const SAMPLES_PER_PIXEL = 400;
+  const SAMPLES_PER_PIXEL = 600;
   const MAX_DEPTH = 10;
   const SEED = 1;
 

@@ -337,8 +337,8 @@ export class Box extends Hittable {
     this.sides.push(new XZRectangle(p0[0], p1[0], p0[2], p1[2], p1[1], this.material));
     this.sides.push(new XZRectangle(p0[0], p1[0], p0[2], p1[2], p0[1], this.material));
 
-    this.sides.push(new XZRectangle(p0[1], p1[1], p0[2], p1[2], p1[0], this.material));
-    this.sides.push(new XZRectangle(p0[1], p1[1], p0[2], p1[2], p0[0], this.material));
+    this.sides.push(new YZRectangle(p0[1], p1[1], p0[2], p1[2], p1[0], this.material));
+    this.sides.push(new YZRectangle(p0[1], p1[1], p0[2], p1[2], p0[0], this.material));
   }
 
   public hit(r: ray, t_min: number, t_max: number): HitRecord | null {
