@@ -1,5 +1,5 @@
 import { Camera } from './camera.js';
-import { HittableList, Sphere, Moveable, XYRectangle, Hittable, YZRectangle, XZRectangle, Box, RotateY, Translate } from './hittable.js';
+import { HittableList, Sphere, Moveable, XYRectangle, Hittable, YZRectangle, XZRectangle, Box, Rotate, Translate } from './hittable.js';
 import { LambertianDiffuseMaterial, Dieletric, Metal, Light, Material, Scene } from './scene.js';
 import { CheckerTexture, NoiseTexture, SolidTexture } from './textures.js';
 import { SeededRandom } from './util.js';
@@ -165,8 +165,8 @@ export function cornell_box() {
 
   objects.push(new XZRectangle(213, 343, 227, 332, 554, light)); //light
 
-  objects.push(new Translate(new RotateY(new Box([0,0,0], [165,330,165], white), 15), [265, 0, 295]));
-  objects.push(new Translate(new RotateY(new Box([0,0,0], [165,165,165], white), -18), [130, 0, 65]));
+  objects.push(new Translate(new Rotate(new Box([0,0,0], [165,330,165], white), 15, 1), [265, 0, 295]));
+  objects.push(new Translate(new Rotate(new Box([0,0,0], [165,165,165], white), -18, 1), [130, 0, 65]));
 
   return {
     scene: new Scene(new HittableList(objects), [0,0,0]),

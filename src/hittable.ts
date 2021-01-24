@@ -377,13 +377,25 @@ export class Translate extends Hittable {
   }
 }
 
-export class RotateY extends Hittable {
+export class Rotate extends Hittable {
   private sin_theta: number;
   private cos_theta: number;
   private bbox: aabb | null;
+  private axis1: number;
+  private axis2: number;
 
-  constructor(private p: Hittable, angle: number) {
+  constructor(private p: Hittable, angle: number, private axis: number) {
     super();
+    if (axis === 0) {
+      this.axis1 = 1;
+      this.axis2 = 2;
+    } else if (axis === 1) {
+      this.axis1 = 0;
+      this.axis2 = 2;
+    } else {
+      this.axis1 = 0;
+      this.axis2 = 1;
+    }
     const radians = degrees_to_radians(angle);
     this.sin_theta = Math.sin(radians);
     this.cos_theta = Math.cos(radians);
@@ -398,14 +410,19 @@ export class RotateY extends Hittable {
     for (let i = 0; i < 2 ; i++) {
       for (let j = 0; j < 2; j++) {
         for (let k = 0; k < 2; k++) {
-          const x = i*this.bbox.maximum[0] + (1-i)*this.bbox.minimum[0];
-          const y = j*this.bbox.maximum[1] + (1-j)*this.bbox.minimum[1];
-          const z = k*this.bbox.maximum[2] + (1-k)*this.bbox.minimum[2];
+          const xyz = [
+            i*this.bbox.maximum[0] + (1-i)*this.bbox.minimum[0],
+            j*this.bbox.maximum[1] + (1-j)*this.bbox.minimum[1],
+            k*this.bbox.maximum[2] + (1-k)*this.bbox.minimum[2]
+          ];
 
-          const newx = this.cos_theta * x + this.sin_theta * z;
-          const newz = -this.sin_theta * x + this.cos_theta * z;
+          const new1 = this.cos_theta * xyz[this.axis1] + this.sin_theta * xyz[this.axis2];
+          const new2 = -this.sin_theta * xyz[this.axis1] + this.cos_theta * xyz[this.axis2];
 
-          const tester = [newx, y, newz];
+          const tester = [];
+          tester[this.axis] = xyz[this.axis];
+          tester[this.axis1] = new1;
+          tester[this.axis2] = new2;
 
           for (let c = 0; c < 3; c++) {
             min[c] = Math.min(min[c], tester[c]);
@@ -422,11 +439,11 @@ export class RotateY extends Hittable {
     const origin = [r.origin[0], r.origin[1], r.origin[2]];
     const direction = [r.direction[0], r.direction[1], r.direction[2]];
 
-    origin[0] = this.cos_theta * r.origin[0] - this.sin_theta * r.origin[2];
-    origin[2] = this.sin_theta * r.origin[0] + this.cos_theta * r.origin[2];
+    origin[this.axis1] = this.cos_theta * r.origin[this.axis1] - this.sin_theta * r.origin[this.axis2];
+    origin[this.axis2] = this.sin_theta * r.origin[this.axis1] + this.cos_theta * r.origin[this.axis2];
 
-    direction[0] = this.cos_theta * r.direction[0] - this.sin_theta * r.direction[2];
-    direction[2] = this.sin_theta * r.direction[0] + this.cos_theta * r.direction[2];
+    direction[this.axis1] = this.cos_theta * r.direction[this.axis1] - this.sin_theta * r.direction[this.axis2];
+    direction[this.axis2] = this.sin_theta * r.direction[this.axis1] + this.cos_theta * r.direction[this.axis2];
 
     const rotated_r = new ray(origin, direction, r.time);
 
@@ -437,11 +454,11 @@ export class RotateY extends Hittable {
     const p = [rec.p[0], rec.p[1], rec.p[2]];
     const normal = [rec.normal[0], rec.normal[1], rec.normal[2]];
 
-    p[0] = this.cos_theta * rec.p[0] + this.sin_theta * rec.p[2];
-    p[2] = -this.sin_theta * rec.p[0] + this.cos_theta * rec.p[2];
+    p[this.axis1] = this.cos_theta * rec.p[this.axis1] + this.sin_theta * rec.p[this.axis2];
+    p[this.axis2] = -this.sin_theta * rec.p[this.axis1] + this.cos_theta * rec.p[this.axis2];
 
-    normal[0] = this.cos_theta * rec.normal[0] + this.sin_theta * rec.normal[2];
-    normal[2] = -this.sin_theta * rec.normal[0] + this.cos_theta * rec.normal[2];
+    normal[this.axis1] = this.cos_theta * rec.normal[this.axis1] + this.sin_theta * rec.normal[this.axis2];
+    normal[this.axis2] = -this.sin_theta * rec.normal[this.axis1] + this.cos_theta * rec.normal[this.axis2];
 
     return HitRecordFactory.generate(rotated_r, p, normal, rec.t, rec.material, rec.coords);
   }
