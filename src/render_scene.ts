@@ -1,13 +1,14 @@
 import { Camera } from './camera.js';
 import { HittableList, Sphere, Moveable } from './hittable.js';
 import { LambertianDiffuseMaterial, Dieletric, Metal, Light, Material, Scene } from './scene.js';
+import { SolidTexture } from './textures.js';
 import { SeededRandom } from './util.js';
 import { vec3, vec3 as color, vec3 as point3 } from './vec3.js';
 import { add, length, multiply, subtract } from './vec3gpu.js';
 
 function normalScene(): { scene: Scene, camera: Camera } {
-  const GROUND_MATERIAL = new LambertianDiffuseMaterial([0.8, 0.8, 0.0]);
-  const CENTRE_MATERIAL = new LambertianDiffuseMaterial([0.1, 0.2, 0.5]);
+  const GROUND_MATERIAL = new LambertianDiffuseMaterial(new SolidTexture([0.8, 0.8, 0.0]));
+  const CENTRE_MATERIAL = new LambertianDiffuseMaterial(new SolidTexture([0.1, 0.2, 0.5]));
   const LEFT_MATERIAL = new Dieletric(1.5);
   const RIGHT_MATERIAL = new Metal([0.8, 0.6, 0.2], 0);
 
@@ -41,7 +42,7 @@ function normalScene(): { scene: Scene, camera: Camera } {
 
 function finalScene(seed: number): { scene: Scene, camera: Camera } {
   const rand = new SeededRandom(seed);
-  const GROUND_MATERIAL = new LambertianDiffuseMaterial([1, 1, 1]);
+  const GROUND_MATERIAL = new LambertianDiffuseMaterial(new SolidTexture([1, 1, 1]));
   
   const objects: HittableList = new HittableList();
   objects.push(new Sphere([0, -1000, 0], 1000, GROUND_MATERIAL));
@@ -78,7 +79,7 @@ function finalScene(seed: number): { scene: Scene, camera: Camera } {
   }
 
   objects.push(new Sphere([4,1,0], 1, new Dieletric(1.5)));
-  objects.push(new Sphere([-4,1,0], 1, new LambertianDiffuseMaterial([0.4, 0.2, 0.1])));
+  objects.push(new Sphere([-4,1,0], 1, new LambertianDiffuseMaterial(new SolidTexture([0.4, 0.2, 0.1]))));
   objects.push(new Sphere([0,1,0], 1, new Metal([0.7, 0.6, 0.5], 0)));
   objects.push(new Sphere([-1,7,0.1], 1, new Light(6, [0.8,0.6,1])));
 
@@ -97,24 +98,24 @@ function finalScene(seed: number): { scene: Scene, camera: Camera } {
 }
 
 export function olaf() {
-  const GROUND_MATERIAL = new LambertianDiffuseMaterial([0.8, 0.8, 0.8]);
+  const GROUND_MATERIAL = new LambertianDiffuseMaterial(new SolidTexture([0.8, 0.8, 0.8]));
   
   const objects: HittableList = new HittableList();
 
   objects.push(new Sphere([0, -1000, -1], 1000, GROUND_MATERIAL));
-  objects.push(new Sphere([-0.25, 0.25, -1], 0.5, new LambertianDiffuseMaterial([1,1,1])));  //feet
-  objects.push(new Sphere([0.25, 0.25, -1], 0.5, new LambertianDiffuseMaterial([1,1,1])));  //feet
-  objects.push(new Sphere([0, 1.25, -1], 1, new LambertianDiffuseMaterial([1,1,1])));  //body
-  objects.push(new Sphere([0, 2.75, -1], 0.75, new LambertianDiffuseMaterial([1,1,1]))); //face
+  objects.push(new Sphere([-0.25, 0.25, -1], 0.5, new LambertianDiffuseMaterial(new SolidTexture([1,1,1]))));  //fee)t
+  objects.push(new Sphere([0.25, 0.25, -1], 0.5, new LambertianDiffuseMaterial(new SolidTexture([1,1,1]))));  //fee)t
+  objects.push(new Sphere([0, 1.25, -1], 1, new LambertianDiffuseMaterial(new SolidTexture([1,1,1]))));  //bod)y
+  objects.push(new Sphere([0, 2.75, -1], 0.75, new LambertianDiffuseMaterial(new SolidTexture([1,1,1])))); //fac)e
 
   objects.push(new Sphere([0, 2.5, -0.25], 0.2, new Metal([1,0.6,0],1)));//nose
   objects.push(new Sphere([0, 2.4, 0.1], 0.125, new Metal([1,0.6,0], 1)));//nose
   
-  objects.push(new Sphere([0, 1.4, -0.1], 0.125, new LambertianDiffuseMaterial([0,0,0])));//button
-  objects.push(new Sphere([0, 1.1, -0.1], 0.125, new LambertianDiffuseMaterial([0,0,0])));//button
+  objects.push(new Sphere([0, 1.4, -0.1], 0.125, new LambertianDiffuseMaterial(new SolidTexture([0,0,0]))));//butto)n
+  objects.push(new Sphere([0, 1.1, -0.1], 0.125, new LambertianDiffuseMaterial(new SolidTexture([0,0,0]))));//butto)n
 
-  objects.push(new Sphere([-0.25, 2.8, -0.3], 0.125, new LambertianDiffuseMaterial([0,0,0])));//button
-  objects.push(new Sphere([0.25, 2.8, -0.3], 0.125, new LambertianDiffuseMaterial([0,0,0])));//button
+  objects.push(new Sphere([-0.25, 2.8, -0.3], 0.125, new LambertianDiffuseMaterial(new SolidTexture([0,0,0]))));//butto)n
+  objects.push(new Sphere([0.25, 2.8, -0.3], 0.125, new LambertianDiffuseMaterial(new SolidTexture([0,0,0]))));//butto)n
 
   objects.push(new Sphere([-20, 20, 4], 8, new Light(5, [1,1,1])));//button
   objects.push(new Sphere([20, 20, 4], 8, new Light(5, [1,1,1])));//button
@@ -135,12 +136,12 @@ export function olaf() {
 }
 
 export function background() {
-  const GROUND_MATERIAL = new LambertianDiffuseMaterial([0.8, 0.8, 0.8]);
+  const GROUND_MATERIAL = new LambertianDiffuseMaterial(new SolidTexture([0.8, 0.8, 0.8]));
   
   const objects: HittableList = new HittableList();
 
-  objects.push(new Sphere([-2, 0, -1], 1, new LambertianDiffuseMaterial([0,0,1])))
-  objects.push(new Sphere([2, 0, -1], 1, new LambertianDiffuseMaterial([1,0,0])))
+  objects.push(new Sphere([-2, 0, -1], 1, new LambertianDiffuseMaterial(new SolidTexture([0,0,1]))))
+  objects.push(new Sphere([2, 0, -1], 1, new LambertianDiffuseMaterial(new SolidTexture([1,0,0]))))
 
   const lookfrom = [2,3,2.2];
   const lookat = [0,1,-1];

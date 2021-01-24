@@ -3,6 +3,7 @@ import { ray } from './ray.js';
 import { BVHNode, HitRecord, Hittable, HittableList } from './hittable.js';
 import * as util from './util.js';
 import { add, addMutate, dot, near_zero, negate, reflect, refract, scale, subtract, unit } from './vec3gpu.js';
+import { Texture } from './textures.js';
 
 export class Scene {
   public root: Hittable;
@@ -29,7 +30,7 @@ export class SimpleDiffuseMaterial extends Material {
 }
 
 export class LambertianDiffuseMaterial extends Material {
-  constructor(private c: color) {
+  constructor(private t: Texture) {
     super();
   }
 
@@ -39,7 +40,7 @@ export class LambertianDiffuseMaterial extends Material {
       return new ray(rec.p, rec.normal, ray_in.time);
     }
     
-    rec.attenuation = this.c;
+    rec.attenuation = this.t.value(rec.coords!.u, rec.coords!.v, rec.p);
     return new ray(rec.p, target, ray_in.time);
   }
 }

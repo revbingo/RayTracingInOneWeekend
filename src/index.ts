@@ -6,7 +6,7 @@ import { Renderer } from './renderer.js';
 (async function() {
   const IMG_WIDTH = 800;
   const ASPECT_RATIO = 16/9;
-  const SAMPLES_PER_PIXEL = 100;
+  const SAMPLES_PER_PIXEL = 10;
   const MAX_DEPTH = 10;
   const SEED = 1;
 

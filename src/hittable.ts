@@ -1,10 +1,10 @@
-import { GPU } from 'gpu.js';
 import { aabb } from './aabb.js';
 import { ray } from './ray.js';
 import { Material, LambertianDiffuseMaterial } from './scene.js';
 import { vec3 as point3, vec3 as color, vec3 } from './vec3.js';
 import { add, scale, subtract, dot, negate, scaleDown } from './vec3gpu.js';
 import { randomInt } from './util.js';
+import { Texture } from './textures.js';
 
 export interface HitRecord {
   p: point3;
@@ -12,12 +12,13 @@ export interface HitRecord {
   t: number;
   front_face: boolean;
   material: Material;
+  coords?: { u: number, v: number };
   attenuation?: color;
   emitted?: color;
 }
 
 export class HitRecordFactory {
-  public static generate(r: ray, p: point3, outward_normal: vec3, t: number, material: Material) {
+  public static generate(r: ray, p: point3, outward_normal: vec3, t: number, material: Material, coords?: {u:number, v:number}) {
     const front_face = dot(r.direction, outward_normal) < 0;
     const normal = front_face ? outward_normal : negate(outward_normal);
     return {
@@ -25,7 +26,8 @@ export class HitRecordFactory {
       p,
       normal,
       front_face,
-      material
+      material,
+      coords
     };
   }
 }
@@ -197,7 +199,10 @@ export class Sphere extends Hittable {
     }
 
     const p = r.at(root);
-    return HitRecordFactory.generate(r, p, scaleDown(subtract(p, this.centreAt(r.time)), this.radius), root, this.material);
+
+    const outward_normal = scaleDown(subtract(p, this.centreAt(r.time)), this.radius);
+    const uv = this.getUV(outward_normal);
+    return HitRecordFactory.generate(r, p, outward_normal, root, this.material, uv);
   }
 
   public bounding_box(t0: number, t1: number): aabb {
@@ -221,6 +226,13 @@ export class Sphere extends Hittable {
     return this.movable ? 
         add(this.centre, scale(subtract(this.movable.cen1, this.centre), time))
       : this.centre;
+  }
+
+  private getUV(p: point3): {u: number, v: number } {
+    const theta = Math.acos(-p[1]);
+    const phi = Math.atan2(-p[2], p[0]) + Math.PI;
+
+    return { u: phi / (2 * Math.PI), v: theta / phi };
   }
 }
 
