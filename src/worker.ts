@@ -51,7 +51,7 @@ function rayColor(r: ray, depth: number, scene: Scene): color {
       return add(multiply(recast, rec.attenuation || WHITE), rec.emitted || BLACK);
     } else {
       // console.log(`Ray terminated (emitted) after ${this.max_depth - depth} bounces`)
-      return BLACK;
+      return rec.emitted || BLACK;
     } 
   } else {
     // console.log(`Ray terminated (background) after ${depth} bounces`)
