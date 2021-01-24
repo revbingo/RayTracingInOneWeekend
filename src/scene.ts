@@ -40,7 +40,7 @@ export class LambertianDiffuseMaterial extends Material {
       return new ray(rec.p, rec.normal, ray_in.time);
     }
     
-    rec.attenuation = this.t.value(rec.coords!.u, rec.coords!.v, rec.p);
+    rec.attenuation = this.t.value(rec.coords.u, rec.coords.v, rec.p);
     return new ray(rec.p, target, ray_in.time);
   }
 }

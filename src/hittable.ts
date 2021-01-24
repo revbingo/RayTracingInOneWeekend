@@ -12,13 +12,13 @@ export interface HitRecord {
   t: number;
   front_face: boolean;
   material: Material;
-  coords?: { u: number, v: number };
+  coords: { u: number, v: number };
   attenuation?: color;
   emitted?: color;
 }
 
 export class HitRecordFactory {
-  public static generate(r: ray, p: point3, outward_normal: vec3, t: number, material: Material, coords?: {u:number, v:number}) {
+  public static generate(r: ray, p: point3, outward_normal: vec3, t: number, material: Material, coords: {u:number, v:number}) {
     const front_face = dot(r.direction, outward_normal) < 0;
     const normal = front_face ? outward_normal : negate(outward_normal);
     return {
@@ -61,7 +61,7 @@ export class HittableList extends Hittable {
 
       if (!rec) continue;
       const p = r.at(rec.t);
-      const newHit = HitRecordFactory.generate(r, p, rec.normal, rec.t, rec.material);
+      const newHit = HitRecordFactory.generate(r, p, rec.normal, rec.t, rec.material, { u: 0, v: 0});
       if (newHit) {
         closest_so_far = newHit.t;
         hitRecord = newHit;
@@ -236,6 +236,120 @@ export class Sphere extends Hittable {
   }
 }
 
+export class XYRectangle extends Hittable {
+  constructor(private x0: number, private x1: number, private y0: number, private y1: number, private k: number, private material: Material) {
+    super();
+  }
+
+  public hit(r: ray, t_min: number, t_max: number): HitRecord | null {
+    const t = (this.k - r.origin[2]) / r.direction[2];
+    if (t < t_min || t > t_max) {
+      return null;
+    }
+
+    const x = r.origin[0] + (t*r.direction[0]);
+    const y = r.origin[1] + (t*r.direction[1]);
+
+    if (x < this.x0 || x > this.x1 || y < this.y0 || y > this.y1) {
+      return null;
+    }
+
+    const outward_normal = [0,0,1];
+    const uv = { u: (x-this.x0)/(this.x1-this.x0), v: (y-this.y0)/(this.y1-this.y0)}
+    const p = r.at(t);
+    return HitRecordFactory.generate(r, p, outward_normal, t, this.material, uv);
+
+  }
+  public bounding_box(t0: number, t1: number): aabb | null {
+    return new aabb([this.x0, this.y0, this.k-0.0001], [this.x1, this.y1, this.k+0.0001]);
+  }
+
+}
+
+export class XZRectangle extends Hittable {
+  constructor(private x0: number, private x1: number, private z0: number, private z1: number, private k: number, private material: Material) {
+    super();
+  }
+
+  public hit(r: ray, t_min: number, t_max: number): HitRecord | null {
+    const t = (this.k - r.origin[1]) / r.direction[1];
+    if (t < t_min || t > t_max) {
+      return null;
+    }
+
+    const x = r.origin[0] + (t*r.direction[0]);
+    const z = r.origin[2] + (t*r.direction[2]);
+
+    if (x < this.x0 || x > this.x1 || z < this.z0 || z > this.z1) {
+      return null;
+    }
+
+    const outward_normal = [0,1,0];
+    const uv = { u: (x-this.x0)/(this.x1-this.x0), v: (z-this.z0)/(this.z1-this.z0)}
+    const p = r.at(t);
+    return HitRecordFactory.generate(r, p, outward_normal, t, this.material, uv);
+
+  }
+  public bounding_box(t0: number, t1: number): aabb | null {
+    return new aabb([this.x0, this.k-0.0001, this.z0], [this.x1, this.k+0.0001, this.z1]);
+  }
+
+}
+
+export class YZRectangle extends Hittable {
+  constructor(private y0: number, private y1: number, private z0: number, private z1: number, private k: number, private material: Material) {
+    super();
+  }
+
+  public hit(r: ray, t_min: number, t_max: number): HitRecord | null {
+    const t = (this.k - r.origin[0]) / r.direction[0];
+    if (t < t_min || t > t_max) {
+      return null;
+    }
+
+    const y = r.origin[1] + (t*r.direction[1]);
+    const z = r.origin[2] + (t*r.direction[2]);
+
+    if (y < this.y0 || y > this.y1 || z < this.z0 || z > this.z1) {
+      return null;
+    }
+
+    const outward_normal = [1,0,0];
+    const uv = { u: (y-this.y0)/(this.y1-this.y0), v: (z-this.z0)/(this.z1-this.z0)}
+    const p = r.at(t);
+    return HitRecordFactory.generate(r, p, outward_normal, t, this.material, uv);
+
+  }
+  public bounding_box(t0: number, t1: number): aabb | null {
+    return new aabb([this.k-0.0001, this.y0, this.z0], [this.k+0.0001, this.y1, this.z1]);
+  }
+}
+
+export class Box extends Hittable {
+  private sides: HittableList = new HittableList();
+
+  constructor(private p0: point3, private p1: point3, private material: Material) {
+    super(); 
+
+    this.sides.push(new XYRectangle(p0[0], p1[0], p0[1], p1[1], p1[2], this.material));
+    this.sides.push(new XYRectangle(p0[0], p1[0], p0[1], p1[1], p0[2], this.material));
+
+    this.sides.push(new XZRectangle(p0[0], p1[0], p0[2], p1[2], p1[1], this.material));
+    this.sides.push(new XZRectangle(p0[0], p1[0], p0[2], p1[2], p0[1], this.material));
+
+    this.sides.push(new XZRectangle(p0[1], p1[1], p0[2], p1[2], p1[0], this.material));
+    this.sides.push(new XZRectangle(p0[1], p1[1], p0[2], p1[2], p0[0], this.material));
+  }
+
+  public hit(r: ray, t_min: number, t_max: number): HitRecord | null {
+    return this.sides.hit(r, t_min, t_max);
+  }
+
+  public bounding_box(t0: number, t1: number): aabb | null {
+    return new aabb(this.p0, this.p1);
+  }
+
+}
 // function hit(orig: number[], dir: number[], centre: number[], radius: number, t_min: number, t_max: number): number {
 //   // ===
 //   const oc: number[] = subtract(orig, centre);
